@@ -9,7 +9,7 @@ version_path = path.join(path.abspath(path.dirname(__file__)), 'script/__version
 
 version = get_version(sys.argv, version_path, step=16)
 
-install_requires = ['notetool', 'notedata']
+install_requires = ['notetool', 'notedata', 'notedrive']
 
 setup(name='notefight',
       version=version,

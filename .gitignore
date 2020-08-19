@@ -2,3 +2,5 @@ build/*
 dist/*
 notedata.egg-info/*
 example/download/*
+notefight/tianchi/t531800/data
+notefight/tianchi/t531800/data_set
