@@ -2,8 +2,8 @@ build/*
 dist/*
 notedata.egg-info/*
 example/download/*
-notefight/tianchi/t531800/data
-notefight/tianchi/t531800/data_set
+funfight/tianchi/t531800/data
+funfight/tianchi/t531800/data_set
 
 # ---- AI 编码助手 ----
 # 只忽略本地状态；团队有意共享的 agent / 命令 / 规则定义仍然版本化。
@@ -30,4 +30,4 @@ notefight/tianchi/t531800/data_set
 .specstory/
 CLAUDE.local.md
 AGENTS.local.md
-notefight/tianchi/t531800/aiflow.db
+funfight/tianchi/t531800/aiflow.db

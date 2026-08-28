@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-name=notefight
+name=funfight
 echo $name
 
 if [ "$1" = "build" ]; then

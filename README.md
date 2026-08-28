@@ -4,12 +4,12 @@
 
 仓库里保存的是作者参加阿里云天池比赛（比赛编号 `531800`）时提交的方案代码：基于阿里开源的 [AI Flow](https://github.com/alibaba/flink-ai-extended) 框架编写的一套批流一体机器学习工作流，用 TensorFlow 训练自编码器（Autoencoder）、用 Proxima 构建向量索引、再用 Flink 做在线预测/检索。除了这一份比赛代码外，没有其他功能。
 
-> 命名说明：仓库名是 `funfight`，但源码目录、`setup.py` 里声明的包名、以及历史上尝试发布的 PyPI 名都是 **`notefight`**——这是本组织早期 `note*` → `fun*` 改名时遗留下来的、只改了仓库名没改源码/发布名的情况。目前 PyPI 上查不到 `notefight` 或 `funfight` 任何一个已发布的版本（均返回 `Not Found`），尽管 `script/build.sh` 里写了 `twine upload` 发布步骤。**不建议 `pip install`。**
+> 命名说明：目前 PyPI 上查不到 `funfight` 已发布的版本（返回 `Not Found`），尽管 `script/build.sh` 里写了 `twine upload` 发布步骤。**不建议 `pip install`。**
 
 ## 目录结构 / 代码做了什么
 
 ```
-notefight/
+funfight/
 └── tianchi/
     └── t531800/
         ├── step1.py            # 准备环境：从蓝奏云下载数据集，安装 apache-flink / kafka-python，下载 Flink/Kafka 安装包
@@ -26,7 +26,7 @@ notefight/
             └── data_type.py            # FloatDataType / DoubleDataType：在 Proxima 类型和 Flink 类型之间转换
 ```
 
-`example/531800.py` 是空文件，`notefight/__init__.py`、`notefight/tianchi/__init__.py`、`t531800/__init__.py` 也都是空的包占位文件，没有对外暴露任何 API。
+`example/531800.py` 是空文件，`funfight/__init__.py`、`funfight/tianchi/__init__.py`、`t531800/__init__.py` 也都是空的包占位文件，没有对外暴露任何 API。
 
 ## 依赖
 
@@ -34,4 +34,4 @@ notefight/
 
 ## 使用
 
-没有命令行入口，也没有可直接调用的公共函数。如果要看当年的方案逻辑，直接阅读 `notefight/tianchi/t531800/` 下的脚本即可；如果要复现比赛环境，需要先执行 `step1.py` 里的下载/安装步骤，再参考 `ai_flow_master.py` 启动 AIFlowMaster，最后运行 `package/python_codes/tianchi_main.py` 提交 workflow。
+没有命令行入口，也没有可直接调用的公共函数。如果要看当年的方案逻辑，直接阅读 `funfight/tianchi/t531800/` 下的脚本即可；如果要复现比赛环境，需要先执行 `step1.py` 里的下载/安装步骤，再参考 `ai_flow_master.py` 启动 AIFlowMaster，最后运行 `package/python_codes/tianchi_main.py` 提交 workflow。
