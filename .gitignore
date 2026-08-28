@@ -1,5 +1,7 @@
 build/*
 dist/*
+__pycache__/
+*.pyc
 notedata.egg-info/*
 example/download/*
 funfight/tianchi/t531800/data
