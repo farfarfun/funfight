@@ -30,7 +30,7 @@ funfight/
 
 ## 依赖
 
-代码依赖比赛当时的特定环境：`ai_flow`、`flink_ai_flow`（阿里 AI Flow 框架）、`pyflink`、`pyproxima2`（向量检索）、`kafka-python`、`tensorflow`，以及本组织的 `notetool`/`notedata`/`notedrive`。这些依赖版本较老，脚本里还有 `pip install apache-flink==1.11.0`、下载 Flink 1.11.0 / Kafka 2.3.0 安装包等步骤，无法直接在现代环境里运行，需要按天池比赛当年的环境手动搭建。
+代码依赖比赛当时的特定环境：`ai_flow`、`flink_ai_flow`（阿里 AI Flow 框架）、`pyflink`、`pyproxima2`（向量检索）、`kafka-python`、`tensorflow`，以及本组织的 `funtool`/`fundata`/`notedrive`。这些依赖版本较老，脚本里还有 `pip install apache-flink==1.11.0`、下载 Flink 1.11.0 / Kafka 2.3.0 安装包等步骤，无法直接在现代环境里运行，需要按天池比赛当年的环境手动搭建。
 
 ## 使用
 
