@@ -2,7 +2,7 @@ build/*
 dist/*
 __pycache__/
 *.pyc
-notedata.egg-info/*
+funfight.egg-info/*
 example/download/*
 funfight/tianchi/t531800/data
 funfight/tianchi/t531800/data_set
