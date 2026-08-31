@@ -4,7 +4,7 @@
 
 仓库里保存的是作者参加阿里云天池比赛（比赛编号 `531800`）时提交的方案代码：基于阿里开源的 [AI Flow](https://github.com/alibaba/flink-ai-extended) 框架编写的一套批流一体机器学习工作流，用 TensorFlow 训练自编码器（Autoencoder）、用 Proxima 构建向量索引、再用 Flink 做在线预测/检索。除了这一份比赛代码外，没有其他功能。
 
-> 命名说明：目前 PyPI 上查不到 `funfight` 已发布的版本（返回 `Not Found`），尽管 `script/build.sh` 里写了 `twine upload` 发布步骤。**不建议 `pip install`。**
+> 命名说明：目前 PyPI 上查不到 `funfight` 已发布的版本（返回 `Not Found`），尽管 `script/build.sh` 里写了 `twine upload` 发布步骤。**不建议 `pip install`**：`pyproject.toml` 依赖的 `notedrive` 传递依赖了 `demjson==2.2.4`，这个版本的 `demjson` 在现代 Python/setuptools 环境下构建会直接失败（`use_2to3` 参数已被移除），导致 `pip install` 无法完成。
 
 ## 目录结构 / 代码做了什么
 
