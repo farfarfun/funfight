@@ -4,7 +4,7 @@
 
 仓库里保存的是作者参加阿里云天池比赛（比赛编号 `531800`）时提交的方案代码：基于阿里开源的 [AI Flow](https://github.com/alibaba/flink-ai-extended) 框架编写的一套批流一体机器学习工作流，用 TensorFlow 训练自编码器（Autoencoder）、用 Proxima 构建向量索引、再用 Flink 做在线预测/检索。除了这一份比赛代码外，没有其他功能。
 
-> 命名说明：目前 PyPI 上查不到 `funfight` 已发布的版本（返回 `Not Found`），尽管 `script/build.sh` 里写了 `twine upload` 发布步骤。**不建议 `pip install`**：`pyproject.toml` 依赖的 `notedrive` 传递依赖了 `demjson==2.2.4`，这个版本的 `demjson` 在现代 Python/setuptools 环境下构建会直接失败（`use_2to3` 参数已被移除），导致 `pip install` 无法完成。
+> 说明：目前 PyPI 上查不到 `funfight` 已发布的版本（返回 `Not Found`），尽管 `script/build.sh` 里写了 `twine upload` 发布步骤。本仓库只是一次性比赛代码存档，**不建议 `pip install`**。
 
 ## 目录结构 / 代码做了什么
 
@@ -30,7 +30,7 @@ funfight/
 
 ## 依赖
 
-代码依赖比赛当时的特定环境：`ai_flow`、`flink_ai_flow`（阿里 AI Flow 框架）、`pyflink`、`pyproxima2`（向量检索）、`kafka-python`、`tensorflow`，以及本组织的 `funtool`/`fundata`/`notedrive`。这些依赖版本较老，脚本里还有 `pip install apache-flink==1.11.0`、下载 Flink 1.11.0 / Kafka 2.3.0 安装包等步骤，无法直接在现代环境里运行，需要按天池比赛当年的环境手动搭建。
+代码依赖比赛当时的特定环境：`ai_flow`、`flink_ai_flow`（阿里 AI Flow 框架）、`pyflink`、`pyproxima2`（向量检索）、`kafka-python`、`tensorflow`，以及本组织的 `funtool`/`fundata`/`fundrive`。这些依赖版本较老，脚本里还有 `pip install apache-flink==1.11.0`、下载 Flink 1.11.0 / Kafka 2.3.0 安装包等步骤，无法直接在现代环境里运行，需要按天池比赛当年的环境手动搭建。
 
 ## 使用
 
