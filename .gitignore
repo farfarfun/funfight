@@ -2,6 +2,14 @@ build/*
 dist/*
 __pycache__/
 *.pyc
+*.db
+*.rar
+.venv/
+.run/
+logs/
+.idea/
+.vscode/
+node_modules/
 funfight.egg-info/*
 example/download/*
 funfight/tianchi/t531800/data

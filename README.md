@@ -4,7 +4,7 @@
 
 仓库里保存的是作者参加阿里云天池比赛（比赛编号 `531800`）时提交的方案代码：基于阿里开源的 [AI Flow](https://github.com/alibaba/flink-ai-extended) 框架编写的一套批流一体机器学习工作流，用 TensorFlow 训练自编码器（Autoencoder）、用 Proxima 构建向量索引、再用 Flink 做在线预测/检索。除了这一份比赛代码外，没有其他功能。
 
-> 说明：目前 PyPI 上查不到 `funfight` 已发布的版本（返回 `Not Found`），尽管 `script/build.sh` 里写了 `twine upload` 发布步骤。本仓库只是一次性比赛代码存档，**不建议 `pip install`**。
+> 说明：目前 PyPI 上查不到 `funfight` 已发布的版本（返回 `Not Found`）。本仓库只是一次性比赛代码存档，**不建议 `pip install`**。
 
 ## 目录结构 / 代码做了什么
 
@@ -32,6 +32,48 @@ funfight/
 
 代码依赖比赛当时的特定环境：`ai_flow`、`flink_ai_flow`（阿里 AI Flow 框架）、`pyflink`、`pyproxima2`（向量检索）、`kafka-python`、`tensorflow`，以及本组织的 `funtool`/`fundata`/`fundrive`。这些依赖版本较老，脚本里还有 `pip install apache-flink==1.11.0`、下载 Flink 1.11.0 / Kafka 2.3.0 安装包等步骤，无法直接在现代环境里运行，需要按天池比赛当年的环境手动搭建。
 
-## 使用
+## 安装
 
-没有命令行入口，也没有可直接调用的公共函数。如果要看当年的方案逻辑，直接阅读 `funfight/tianchi/t531800/` 下的脚本即可；如果要复现比赛环境，需要先执行 `step1.py` 里的下载/安装步骤，再参考 `ai_flow_master.py` 启动 AIFlowMaster，最后运行 `package/python_codes/tianchi_main.py` 提交 workflow。
+本仓库未发布到 PyPI（`pip install funfight` 会报 `Not Found`），也不建议安装使用；获取代码请直接克隆仓库：
+
+```bash
+git clone https://github.com/farfarfun/funfight.git
+```
+
+如果确实需要把 `funfight` 当作本地包安装（例如只是为了让 `import funfight` 不报错），可以用 uv/pip 从源码安装：
+
+```bash
+uv pip install -e .
+# 或
+pip install -e .
+```
+
+## 最小可运行示例
+
+除比赛方案代码外，`funfight` 包本身不提供任何公共 API，唯一能验证安装是否成功的方式是导入空包：
+
+```bash
+python3 -c "import funfight; print(funfight.__file__)"
+```
+
+## 使用（服务/流程入口）
+
+没有命令行入口，也没有可直接调用的公共函数。这些流程依赖比赛当年的历史环境（Flink 1.11.0、Kafka 2.3.0、阿里内部的 AI Flow / Proxima 服务等），不是可以用 `scripts/setup.sh` 统一 start/stop 的常规服务，因此仍按当年的手工步骤说明，不提供伪装成「一键启停」的脚本：
+
+1. 执行 `funfight/tianchi/t531800/step1.py` 里的 `step1()`/`step2()`/`step3()`，依次下载数据集、安装 Flink/Kafka 历史版本、准备 `ai_flow` wheel 包；
+2. 参考 `funfight/tianchi/t531800/ai_flow_master.py` 启动 AIFlowMaster（读取同目录 `master.yaml`）；
+3. 按 `funfight/tianchi/t531800/README.md` 配置好 `PYTHONPATH`/`ENV_HOME`/`TASK_ID` 等环境变量后，启动 `kafka-source.py`（Kafka Source）；
+4. 最后运行 `package/python_codes/tianchi_main.py` 提交 workflow。
+
+---
+
+## 关于 farfarfun
+
+[farfarfun](https://github.com/farfarfun) 是一个专注于实用工具库的开源组织，
+涵盖云存储、数据处理、AI、多媒体与开发工具链等方向。
+
+- 🏠 组织主页：<https://github.com/farfarfun>
+- 📦 PyPI：<https://pypi.org/user/niuliangtao/>
+- 📧 联系：farfarfun@qq.com
+
+本项目基于 [MIT](LICENSE) 协议开源。
