@@ -1,13 +1,25 @@
 [project]
 name = "funfight"
-version = "0.0.4"
+version = "0.0.5"
 description = "funfight"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "牛哥", email = "farfarfun@qq.com" }]
-dependencies = ["fundrive[lanzou]"]
+dependencies = [
+    "fundrive[lanzou]>=2.0.57",
+    "farlog>=1.1.8",
+    "funshell>=1.0.23",
+]
+# 注：仓库内 funfight/tianchi/t531800/ 下的天池比赛存档代码还依赖
+# ai_flow、flink_ai_flow、pyflink、pyproxima2、kafka-python、tensorflow、
+# zoo.serving.client 等比赛当年的特定版本环境。其中 ai_flow/flink_ai_flow/
+# pyproxima2/zoo.serving.client 是阿里内部或比赛专用包，从未发布到公开
+# PyPI，无法作为本包的 pip 依赖声明；其余包版本也需与 README「依赖」一节
+# 描述的历史环境（Flink 1.11.0 / Kafka 2.3.0 等）匹配，写进这里的下限版本
+# 号意义不大，因此不在此处声明，避免营造「pip install funfight 即可运行」
+# 的假象。详见 README。
 
 [build-system]
 requires = ["hatchling"]
