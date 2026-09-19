@@ -1,8 +1,9 @@
+import os
 import shutil
-from subprocess import Popen
 from typing import List
 
 import numpy as np
+from farlog import getLogger
 from flink_ai_flow.pyflink import FlinkFunctionContext
 from flink_ai_flow.pyflink.user_define_executor import Executor
 from pyflink.table import Table, ScalarFunction, DataTypes
@@ -11,6 +12,8 @@ from pyflink.table.udf import udf
 from pyproxima2 import *
 
 from data_type import DataType
+
+logger = getLogger("funfight.tianchi.t531800.proxima_executor")
 
 
 class SearchUDF(ScalarFunction):
@@ -54,23 +57,21 @@ class SearchUDTF3(ScalarFunction):
     def eval(self, vec):
         if self.ctx is None:
             raise RuntimeError()
-        with open('/root/test', 'a') as f:
-            if len(vec) != 0 and not vec.isspace():
-                f.write(str(vec))
-                f.write('\n')
-                vec = np.array([float(v) for v in vec.split(' ')]).astype(self.element_type.to_numpy_type())
-                results = self.ctx.search(query=vec)
-                near_key = results[0][0].key
-                for k, v in self.map.items():
-                    if near_key not in v:
-                        self.map[self.may_be_person_num] = []
-                        self.map[self.may_be_person_num].append(near_key)
-                        self.may_be_person_num += 1
-                        return self.may_be_person_num - 1
-                    else:
-                        self.map[k].append(near_key)
-                        return k
-            return None
+        if len(vec) != 0 and not vec.isspace():
+            logger.debug("SearchUDTF3 收到向量: %s", vec)
+            vec = np.array([float(v) for v in vec.split(' ')]).astype(self.element_type.to_numpy_type())
+            results = self.ctx.search(query=vec)
+            near_key = results[0][0].key
+            for k, v in self.map.items():
+                if near_key not in v:
+                    self.map[self.may_be_person_num] = []
+                    self.map[self.may_be_person_num].append(near_key)
+                    self.may_be_person_num += 1
+                    return self.may_be_person_num - 1
+                else:
+                    self.map[k].append(near_key)
+                    return k
+        return None
 
 
 class SearchUDTF(ScalarFunction):
@@ -122,7 +123,6 @@ class SearchExecutor3(Executor):
     def execute(self, function_context: FlinkFunctionContext, input_list: List[Table]) -> List[Table]:
         t_env = function_context.get_table_env()
         table = input_list[0]
-        Popen('rm -rf /root/test', shell=True)
         t_env.register_function("search", udf(SearchUDTF3(self.path, self.element_type),
                                               DataTypes.STRING(), DataTypes.INT()))
         return [table.select("face_id, device_id, search(feature_data) as near_id")]
@@ -145,14 +145,12 @@ class BuildIndexUDF(ScalarFunction):
             params={'proxima.hc.builder.max_document_count': self._docs})
 
     def eval(self, key, vec):
-        with open('/root/debug', 'a') as f:
-            if len(vec) != 0 and not vec.isspace():
-                vector = [float(v) for v in vec.split(' ')]
-                self.holder.emplace(int(key), np.array(vector).astype(self.element_type.to_numpy_type()))
-                f.write(str(key) + ' ' + str(vec))
-                f.write('\n')
-                return key
-            return None
+        if len(vec) != 0 and not vec.isspace():
+            vector = [float(v) for v in vec.split(' ')]
+            self.holder.emplace(int(key), np.array(vector).astype(self.element_type.to_numpy_type()))
+            logger.debug("BuildIndexUDF 写入向量: key=%s, vec=%s", key, vec)
+            return key
+        return None
 
     def close(self):
         self.builder.train_and_build(self.holder).dump(IndexDumper(path=self.path))
@@ -169,7 +167,6 @@ class BuildIndexExecutor(Executor):
         t_env = function_context.get_table_env()
         statement_set = function_context.get_statement_set()
         table = input_list[0]
-        Popen('rm -rf /root/debug', shell=True)
         t_env.register_function("build_index", udf(BuildIndexUDF(self.path, self.element_type, self.dimension),
                                                    [DataTypes.STRING(), DataTypes.STRING()], DataTypes.STRING()))
         dummy_output_path = '/tmp/indexed_key'

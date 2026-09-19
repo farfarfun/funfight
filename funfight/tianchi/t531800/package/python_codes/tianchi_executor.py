@@ -1,11 +1,11 @@
 import json
 import os
 import shutil
-from subprocess import Popen
 from typing import List
 
 import numpy
 from ai_flow import ExampleMeta, update_notification
+from farlog import getLogger
 from flink_ai_flow.pyflink.user_define_executor import TableEnvCreator, SourceExecutor, FlinkFunctionContext, \
     SinkExecutor, Executor
 from pyflink.dataset import ExecutionEnvironment
@@ -15,6 +15,8 @@ from pyflink.table import TableEnvironment, StreamTableEnvironment, EnvironmentS
     CsvTableSink
 from pyflink.table.udf import udf, FunctionContext
 from zoo.serving.client import InputQueue
+
+logger = getLogger("funfight.tianchi.t531800.tianchi_executor")
 
 
 class StreamTableEnvCreatorBuildIndex(TableEnvCreator):
@@ -155,24 +157,19 @@ class PredictAutoEncoderWithTrain(Executor):
                                              frontend_url="http://127.0.0.1:10020")
 
             def eval(self, feature_data):
-                with open('/root/predict', 'a') as f:
-                    try:
-                        f.write('======' + feature_data)
-                        f.write('\n')
-                        feature_samples = []
-                        for feature_element in feature_data.split(' '):
-                            feature_samples.append(float(feature_element))
-                        request_instances = {'instances': [{'ids': numpy.array(feature_samples).tolist()}]}
-                        # Cluster serving predict sync API
-                        response = self._input_api.predict(json.dumps(request_instances))
-                        prediction = ' '.join(response.replace('[', '').replace(']', '').split(','))
-                        f.write('sssss' + prediction)
-                        f.write('\n')
-                        return prediction
-                    except Exception:
-                        return ''
+                try:
+                    feature_samples = []
+                    for feature_element in feature_data.split(' '):
+                        feature_samples.append(float(feature_element))
+                    request_instances = {'instances': [{'ids': numpy.array(feature_samples).tolist()}]}
+                    # Cluster serving predict 同步 API
+                    response = self._input_api.predict(json.dumps(request_instances))
+                    prediction = ' '.join(response.replace('[', '').replace(']', '').split(','))
+                    return prediction
+                except Exception as e:
+                    logger.error("predict1 预测失败: feature_data=%r, error=%s", feature_data, e)
+                    return ''
 
-        Popen('rm -rf /root/predict', shell=True)
         function_context.t_env.register_function("predict1", udf(f=Predict(), input_types=[DataTypes.STRING()],
                                                                  result_type=DataTypes.STRING()))
         return [input_list[0].select('uuid, face_id, predict1(feature_data) as feature_data')]
@@ -192,24 +189,19 @@ class PredictAutoEncoder(Executor):
                                              frontend_url="http://127.0.0.1:10020")
 
             def eval(self, feature_data):
-                with open('/root/offline', 'a') as f:
-                    try:
-                        f.write('=====' + feature_data)
-                        f.write('\n')
-                        feature_samples = []
-                        for feature_element in feature_data.split(' '):
-                            feature_samples.append(float(feature_element))
-                        request_instances = {'instances': [{'ids': numpy.array(feature_samples).tolist()}]}
-                        # Cluster serving predict sync API
-                        response = self._input_api.predict(json.dumps(request_instances))
-                        prediction = ' '.join(response.replace('[', '').replace(']', '').split(','))
-                        f.write('sssssssss' + prediction)
-                        f.write('\n')
-                        return prediction
-                    except Exception:
-                        return ''
+                try:
+                    feature_samples = []
+                    for feature_element in feature_data.split(' '):
+                        feature_samples.append(float(feature_element))
+                    request_instances = {'instances': [{'ids': numpy.array(feature_samples).tolist()}]}
+                    # Cluster serving predict 同步 API
+                    response = self._input_api.predict(json.dumps(request_instances))
+                    prediction = ' '.join(response.replace('[', '').replace(']', '').split(','))
+                    return prediction
+                except Exception as e:
+                    logger.error("predict1（offline）预测失败: feature_data=%r, error=%s", feature_data, e)
+                    return ''
 
-        Popen('rm -rf /root/offline', shell=True)
         function_context.t_env.register_function("predict1", udf(f=Predict(), input_types=[DataTypes.STRING()],
                                                                  result_type=DataTypes.STRING()))
         return [input_list[0].select('face_id, predict1(feature_data) as feature_data')]
@@ -229,22 +221,19 @@ class OnlinePredictAutoEncoder(Executor):
                                              frontend_url="http://127.0.0.1:10020")
 
             def eval(self, feature_data):
-                with open('/root/inference', 'a') as f:
-                    try:
-                        feature_samples = []
-                        for feature_element in feature_data.split(' '):
-                            feature_samples.append(float(feature_element))
-                        request_instances = {'instances': [{'ids': numpy.array(feature_samples).tolist()}]}
-                        # Cluster serving predict sync API
-                        response = self._input_api.predict(json.dumps(request_instances))
-                        prediction = ' '.join(response.replace('[', '').replace(']', '').split(','))
-                        f.write('sssssssss' + prediction)
-                        f.write('\n')
-                        return prediction
-                    except Exception:
-                        return ''
+                try:
+                    feature_samples = []
+                    for feature_element in feature_data.split(' '):
+                        feature_samples.append(float(feature_element))
+                    request_instances = {'instances': [{'ids': numpy.array(feature_samples).tolist()}]}
+                    # Cluster serving predict 同步 API
+                    response = self._input_api.predict(json.dumps(request_instances))
+                    prediction = ' '.join(response.replace('[', '').replace(']', '').split(','))
+                    return prediction
+                except Exception as e:
+                    logger.error("predict2（online）预测失败: feature_data=%r, error=%s", feature_data, e)
+                    return ''
 
-        Popen('rm -rf /root/inference', shell=True)
         function_context.t_env.register_function("predict2", udf(f=Predict(), input_types=[DataTypes.STRING()],
                                                                  result_type=DataTypes.STRING()))
         return [input_list[0].select('face_id, device_id, predict2(feature_data) as feature_data')]

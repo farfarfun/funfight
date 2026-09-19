@@ -15,18 +15,18 @@ from tianchi_executor import ReadTrainExample, StreamTableEnvCreator, ReadPredic
 
 def get_project_path():
     """
-    Get the current project path.
+    获取当前项目路径。
     """
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def collect_data_file():
     """
-    Collect the example data file.
+    收集示例数据文件路径。
     """
-    # Example data sets are under the following data set path.
+    # 示例数据集位于以下数据集路径。
     data_set = '{}/data_set/'.format(os.environ['ENV_HOME'])
-    # First output result file is under the following output path.
+    # 第一个输出结果文件位于以下输出路径。
     output = '{}/codes/{}/output/'.format(os.environ['ENV_HOME'], os.environ['TASK_ID'])
     train_data_file = data_set + 'train_data.csv'
     label_data_file = data_set + 'label_file.csv'
@@ -37,7 +37,7 @@ def collect_data_file():
 
 def prepare_workflow(train_data_file: str, first_test_data_file: str, first_result_data_file: str):
     """
-    Prepare workflow: Example & Model Metadata registration.
+    准备 workflow：注册 Example 与 Model 的元数据。
     """
     train_example_meta: ExampleMeta = af.register_example(name='train_data',
                                                           support_type=ExampleSupportType.EXAMPLE_BATCH,

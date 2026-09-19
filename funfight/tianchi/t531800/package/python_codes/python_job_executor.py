@@ -5,14 +5,19 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from ai_flow import FunctionContext, List, ExampleMeta, register_model_version, ModelMeta
+from farlog import getLogger
 from python_ai_flow.user_define_funcs import Executor
 from tensorflow.keras import Input
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
+logger = getLogger("funfight.tianchi.t531800.python_job_executor")
+
 
 class ReadCsvExample(Executor):
+    """读取训练用 CSV 文件，把第 4 列（下标 3）的特征字符串解析为浮点数组。"""
+
     def execute(self, function_context: FunctionContext, input_list: List) -> List:
         example_meta: ExampleMeta = function_context.node_spec.example_meta
         data = pd.read_csv(example_meta.batch_uri, sep=';', header=None, usecols=[3])
@@ -30,6 +35,8 @@ class ReadCsvExample(Executor):
 
 
 class TrainAutoEncoder(Executor):
+    """训练一个简单的 Dense 自编码器模型，并注册模型版本。"""
+
     def execute(self, function_context: FunctionContext, input_list: List) -> List:
         x_train = input_list[0]
         input_dim = 512
@@ -43,7 +50,7 @@ class TrainAutoEncoder(Executor):
         model.fit(x_train, x_train, validation_data=(x_test, x_test), epochs=1)
         encoder = Model(model_input, encoder)
         model_path = os.path.dirname(os.path.abspath(__file__)) + '/model'
-        print('Save trained model to {}'.format(model_path))
+        logger.info("保存训练好的模型到 %s", model_path)
         if os.path.exists(model_path):
             shutil.rmtree(model_path)
         tf.saved_model.simple_save(
@@ -53,6 +60,6 @@ class TrainAutoEncoder(Executor):
             outputs={"bbb": encoder.output}
         )
         model_meta: ModelMeta = function_context.node_spec.output_model
-        # Register model version to notify that cluster serving is ready to start loading the registered model version.
+        # 注册模型版本，通知 cluster serving 可以开始加载该模型版本。
         register_model_version(model=model_meta, model_path=model_path)
         return []
