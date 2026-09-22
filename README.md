@@ -9,7 +9,7 @@
 ## 目录结构 / 代码做了什么
 
 ```
-funfight/
+src/funfight/
 └── tianchi/
     └── t531800/
         ├── step1.py            # 准备环境：从蓝奏云下载数据集，安装 apache-flink / kafka-python，下载 Flink/Kafka 安装包
@@ -26,7 +26,7 @@ funfight/
             └── data_type.py            # FloatDataType / DoubleDataType：在 Proxima 类型和 Flink 类型之间转换
 ```
 
-`example/531800.py` 是空文件，`funfight/__init__.py`、`funfight/tianchi/__init__.py`、`t531800/__init__.py` 也都是空的包占位文件，没有对外暴露任何 API。
+`example/531800.py` 是空文件，`src/funfight/__init__.py`、`src/funfight/tianchi/__init__.py`、`t531800/__init__.py` 也都是空的包占位文件，没有对外暴露任何 API。
 
 ## 依赖
 
@@ -60,7 +60,7 @@ python3 -c "import funfight; print(funfight.__file__)"
 
 没有命令行入口，也没有可直接调用的公共函数。这些流程依赖比赛当年的历史环境（Flink 1.11.0、Kafka 2.3.0、阿里内部的 AI Flow / Proxima 服务等），不是可以用 `scripts/setup.sh` 统一 start/stop 的常规服务，因此仍按当年的手工步骤说明，不提供伪装成「一键启停」的脚本：
 
-1. 执行 `funfight/tianchi/t531800/step1.py` 里的 `step1()`/`step2()`/`step3()`，依次下载数据集、安装 Flink/Kafka 历史版本、准备 `ai_flow` wheel 包；
+1. 执行 `src/funfight/tianchi/t531800/step1.py` 里的 `step1()`/`step2()`/`step3()`，依次下载数据集、安装 Flink/Kafka 历史版本、准备 `ai_flow` 环境；
 2. 参考 `funfight/tianchi/t531800/ai_flow_master.py` 启动 AIFlowMaster（读取同目录 `master.yaml`）；
 3. 按 `funfight/tianchi/t531800/README.md` 配置好 `PYTHONPATH`/`ENV_HOME`/`TASK_ID` 等环境变量后，启动 `kafka-source.py`（Kafka Source）；
 4. 最后运行 `package/python_codes/tianchi_main.py` 提交 workflow。

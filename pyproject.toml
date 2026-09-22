@@ -12,7 +12,7 @@ dependencies = [
     "farlog>=1.1.8",
     "funshell>=1.0.23",
 ]
-# 注：仓库内 funfight/tianchi/t531800/ 下的天池比赛存档代码还依赖
+# 注：仓库内 src/funfight/tianchi/t531800/ 下的天池比赛存档代码还依赖
 # ai_flow、flink_ai_flow、pyflink、pyproxima2、kafka-python、tensorflow、
 # zoo.serving.client 等比赛当年的特定版本环境。其中 ai_flow/flink_ai_flow/
 # pyproxima2/zoo.serving.client 是阿里内部或比赛专用包，从未发布到公开
@@ -26,7 +26,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["funfight"]
+packages = ["src/funfight"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
 
 [dependency-groups]
 dev = ["pytest>=7.0"]

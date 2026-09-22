@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import os
 import shutil
 
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from ai_flow import FunctionContext, List, ExampleMeta, register_model_version, ModelMeta
+from ai_flow import FunctionContext, ExampleMeta, register_model_version, ModelMeta
 from farlog import getLogger
 from python_ai_flow.user_define_funcs import Executor
 from tensorflow.keras import Input
@@ -18,7 +20,7 @@ logger = getLogger("funfight.tianchi.t531800.python_job_executor")
 class ReadCsvExample(Executor):
     """读取训练用 CSV 文件，把第 4 列（下标 3）的特征字符串解析为浮点数组。"""
 
-    def execute(self, function_context: FunctionContext, input_list: List) -> List:
+    def execute(self, function_context: FunctionContext, input_list: list) -> list:
         example_meta: ExampleMeta = function_context.node_spec.example_meta
         data = pd.read_csv(example_meta.batch_uri, sep=';', header=None, usecols=[3])
         n = data.values.tolist()
@@ -37,7 +39,7 @@ class ReadCsvExample(Executor):
 class TrainAutoEncoder(Executor):
     """训练一个简单的 Dense 自编码器模型，并注册模型版本。"""
 
-    def execute(self, function_context: FunctionContext, input_list: List) -> List:
+    def execute(self, function_context: FunctionContext, input_list: list) -> list:
         x_train = input_list[0]
         input_dim = 512
         encoding_dim = 2

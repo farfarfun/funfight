@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import json
 import os
 import shutil
-from typing import List
 
 import numpy
 from ai_flow import ExampleMeta, update_notification
@@ -83,7 +84,7 @@ class ReadTrainExample(SourceExecutor):
 
 
 class FindHistory(Executor):
-    def execute(self, function_context: FlinkFunctionContext, input_list: List[Table]) -> List[Table]:
+    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
         t_env = function_context.get_table_env()
         table_0 = input_list[0]
         t_env.create_temporary_view('near_table', table_0)
@@ -131,21 +132,21 @@ class ReadOnlinePredictExample(SourceExecutor):
             )
         """)
         table = table_env.from_path('online_example')
-        # Notification AIFlow to send online example messages.
+        # 通知 AIFlow 发送在线示例消息。
         update_notification('source', function_context.node_spec.instance_id)
         return table
 
 
 class TransformTrainExample(Executor):
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: List[Table]) -> List[Table]:
+    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
         input_table = input_list[0]
         return [input_table]
 
 
 class PredictAutoEncoderWithTrain(Executor):
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: List[Table]) -> List[Table]:
+    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
         class Predict(ScalarFunction):
 
             def __init__(self):
@@ -177,7 +178,7 @@ class PredictAutoEncoderWithTrain(Executor):
 
 class PredictAutoEncoder(Executor):
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: List[Table]) -> List[Table]:
+    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
         class Predict(ScalarFunction):
 
             def __init__(self):
@@ -209,7 +210,7 @@ class PredictAutoEncoder(Executor):
 
 class OnlinePredictAutoEncoder(Executor):
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: List[Table]) -> List[Table]:
+    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
         class Predict(ScalarFunction):
 
             def __init__(self):

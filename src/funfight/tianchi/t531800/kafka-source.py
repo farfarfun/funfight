@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import os
 import time
 from subprocess import Popen
-from typing import Dict
 
 import pandas as pd
 import yaml
@@ -30,7 +31,7 @@ class Source(object):
 
         class SourceWatcher(Watcher):
 
-            def __init__(self, yaml_config: Dict):
+            def __init__(self, yaml_config: dict):
                 super().__init__()
                 self._yaml_config = yaml_config
 

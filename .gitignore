@@ -2,6 +2,7 @@ build/*
 dist/*
 __pycache__/
 *.pyc
+*.whl
 *.db
 *.rar
 .venv/
@@ -12,8 +13,8 @@ logs/
 node_modules/
 funfight.egg-info/*
 example/download/*
-funfight/tianchi/t531800/data
-funfight/tianchi/t531800/data_set
+src/funfight/tianchi/t531800/data
+src/funfight/tianchi/t531800/data_set
 
 # ---- AI 编码助手 ----
 # 只忽略本地状态；团队有意共享的 agent / 命令 / 规则定义仍然版本化。
@@ -40,4 +41,4 @@ funfight/tianchi/t531800/data_set
 .specstory/
 CLAUDE.local.md
 AGENTS.local.md
-funfight/tianchi/t531800/aiflow.db
+src/funfight/tianchi/t531800/aiflow.db

@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import os
 import shutil
-from typing import List
 
 import numpy as np
 from farlog import getLogger
@@ -105,7 +106,7 @@ class SearchExecutor(Executor):
         self.element_type = element_type
         self.dimension = dimension
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: List[Table]) -> List[Table]:
+    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
         t_env = function_context.get_table_env()
         table = input_list[0]
         t_env.register_function("search", udf(SearchUDTF(self.path, self.element_type),
@@ -120,7 +121,7 @@ class SearchExecutor3(Executor):
         self.element_type = element_type
         self.dimension = dimension
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: List[Table]) -> List[Table]:
+    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
         t_env = function_context.get_table_env()
         table = input_list[0]
         t_env.register_function("search", udf(SearchUDTF3(self.path, self.element_type),
@@ -163,7 +164,7 @@ class BuildIndexExecutor(Executor):
         self.path = index_path
         self._docs = 100000
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: List[Table]) -> List[Table]:
+    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
         t_env = function_context.get_table_env()
         statement_set = function_context.get_statement_set()
         table = input_list[0]

@@ -72,17 +72,17 @@ def prepare_workflow(train_data_file: str, first_test_data_file: str, first_resu
 
 def run_workflow():
     """
-    Run the user-defined workflow definition.
+    运行用户定义的工作流。
     """
     train_data_file, first_test_data_file, first_result_data_file = collect_data_file()
-    # Prepare workflow: Example & Model Metadata registration.
+    # 准备工作流并注册 Example 与 Model 元数据。
     train_example_meta, first_test_example_meta, second_test_example_meta, \
     first_result_example_meta, second_result_example_meta, train_model_meta = \
         prepare_workflow(train_data_file=train_data_file,
                          first_test_data_file=first_test_data_file,
                          first_result_data_file=first_result_data_file)
 
-    # Save proxima indexes under the following index path.
+    # 将 Proxima 索引保存到以下路径。
     index_path = '{}/codes/{}/'.format(os.environ['ENV_HOME'], os.environ['TASK_ID']) + 'test.index'
 
     # Set Python job config to train model.
