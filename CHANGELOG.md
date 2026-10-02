@@ -2,6 +2,37 @@
 
 本文件记录 funfight 的版本变更，按版本倒序排列。
 
+## [未发布]
+
+### 新增
+
+- 新增 `feature_predict.py`：把三条预测链路（批训练/离线历史/在线流）重复内联的
+  cluster serving 预测逻辑合并成一份可被单元测试覆盖的实现（新增
+  `tests/test_feature_predict.py`，覆盖正常解析、非法输入、非字符串响应、
+  客户端异常透传等路径）。
+- 为 `tianchi_main.py`、`proxima_executor.py` 的公开函数/类/UDF 生命周期方法
+  补充类型标注与中文 docstring。
+
+### 修复
+
+- `tianchi_executor.py` 中三处 `except Exception: ... return ''`（预测失败被静默
+  转换为空结果）改为：解析/响应错误抛出带上下文的 `FeaturePredictError`，
+  客户端自身异常（网络、超时等）原样向上传播，不再吞掉失败语义。
+- `kafka-source.py` 模块导入时直接执行 `Source()` 与 `listen_notification()`
+  （导入即连接 AIFlow 并启动监听）改为放进 `main()`，通过
+  `if __name__ == '__main__'` 调用。
+- 日志不再输出完整人脸特征向量/消息体：`tianchi_executor.py` 的预测失败日志、
+  `proxima_executor.py` 的 `SearchUDTF3`/`BuildIndexUDF` 调试日志、
+  `kafka-source.py` 的发送日志，均改为只记录类型/长度/哈希摘要。
+- `data_type.py` 的 `DoubleDataType.to_numpy_type()` 原来返回单精度类型码
+  `'f'`（与 `FloatDataType` 重复），已改为双精度对应的 `'d'`。
+- README 依赖列表与实际路径修正：删除不存在的 `funtool`/`fundata`，按
+  `pyproject.toml` 列出实际依赖 `fundrive`/`farlog`/`funshell`；「使用」一节
+  的 `funfight/tianchi/...` 路径统一改为仓库中的实际路径
+  `src/funfight/tianchi/...`。
+- `pyproject.toml` 的 `pytest.pythonpath` 补充 `python_codes` 目录，使按
+  README 约定扁平导入的 `feature_predict.py` 可以被 `pytest` 直接测试。
+
 ## [0.0.5] - 2026-09-19
 
 ### 新增

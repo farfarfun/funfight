@@ -29,7 +29,9 @@ build-backend = "hatchling.build"
 packages = ["src/funfight"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+# "src" 让 `import funfight` 可用；python_codes 目录按 README 的说明被扁平导入
+# （`from feature_predict import ...` 等），测试 feature_predict.py 需要它在路径上。
+pythonpath = ["src", "src/funfight/tianchi/t531800/package/python_codes"]
 
 [dependency-groups]
 dev = ["pytest>=7.0"]

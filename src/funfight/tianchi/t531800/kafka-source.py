@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import os
 import time
 from subprocess import Popen
@@ -10,12 +11,22 @@ from ai_flow import Watcher
 from ai_flow.rest_endpoint.service.client.aiflow_client import AIFlowClient
 from farlog import getLogger
 from kafka import KafkaProducer
-from kafka.admin import NewTopic, KafkaAdminClient
+from kafka.admin import KafkaAdminClient, NewTopic
 
 logger = getLogger("funfight.tianchi.t531800.kafka_source")
 
 
-class Source(object):
+def _value_digest(value: str) -> str:
+    """返回消息 value 的脱敏摘要（长度 + 哈希前 12 位），不回显原始内容。
+
+    本模块发送的消息 value 是 ``face_id,device_id,feature_data`` 拼接串，
+    包含人脸特征向量，按 SPEC §8.1 不应完整写入日志。
+    """
+    raw = value.encode("utf8")
+    return f"len={len(raw)} sha256={hashlib.sha256(raw).hexdigest()[:12]}"
+
+
+class Source:
     """
     监听 source 通知，生成在线推理读取示例消息。
     """
@@ -72,12 +83,13 @@ class Source(object):
                 df = pd.read_csv(filepath_or_buffer=self._yaml_config.get('dataset_uri'), delimiter=';', header=None)
                 producer = KafkaProducer(bootstrap_servers=[bootstrap_servers])
                 for index, row in df.iterrows():
-                    logger.info("发送在线推理读取示例消息: topic=%s, key=%s, value=%s",
-                                read_example_topic, row.get(1), '%s,%s,%s' % (row.get(1), row.get(2), row.get(3)))
-                    # 发送在线推理读取示例消息。
+                    value = f"{row.get(1)},{row.get(2)},{row.get(3)}"
+                    logger.info("发送在线推理读取示例消息: topic=%s, key=%s, value_digest=%s",
+                                read_example_topic, row.get(1), _value_digest(value))
+                    # 发送在线推理读取示例消息。value 含人脸特征向量，不写入日志。
                     producer.send(read_example_topic,
                                   key=bytes(row.get(1), encoding='utf8'),
-                                  value=bytes('%s,%s,%s' % (row.get(1), row.get(2), row.get(3)), encoding='utf8'))
+                                  value=bytes(value, encoding='utf8'))
                     time.sleep(self._yaml_config.get('time_interval') / 1000)
 
         self._aiflow_client.start_listen_notification(listener_name='source_listener',
@@ -85,5 +97,15 @@ class Source(object):
                                                       watcher=SourceWatcher(self._yaml_config))
 
 
-source = Source()
-source.listen_notification()
+def main() -> None:
+    """启动 Kafka Source：连接 AIFlow 并监听 source 通知。
+
+    连接网络、启动长期运行的监听是有副作用的操作，因此放在脚本入口而不是
+    模块导入时执行，使本模块可以被安全导入（例如被测试 import 而不触发连接）。
+    """
+    source = Source()
+    source.listen_notification()
+
+
+if __name__ == '__main__':
+    main()

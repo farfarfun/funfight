@@ -1,43 +1,70 @@
+from __future__ import annotations
+
 import os
 import sys
 
 import ai_flow as af
-from ai_flow import ExampleSupportType, ModelType, ExampleMeta, ModelMeta, PythonObjectExecutor, BaseJobConfig
-from flink_ai_flow import LocalFlinkJobConfig, FlinkPythonExecutor
-
+from ai_flow import (
+    BaseJobConfig,
+    ExampleMeta,
+    ExampleSupportType,
+    ModelMeta,
+    ModelType,
+    PythonObjectExecutor,
+)
 from data_type import FloatDataType
+from flink_ai_flow import FlinkPythonExecutor, LocalFlinkJobConfig
 from proxima_executor import BuildIndexExecutor, SearchExecutor, SearchExecutor3
-from python_job_executor import TrainAutoEncoder, ReadCsvExample
-from tianchi_executor import ReadTrainExample, StreamTableEnvCreator, ReadPredictExample, PredictAutoEncoder, \
-    SearchSink, WriteSecondResult, ReadOnlinePredictExample, FindHistory, OnlinePredictAutoEncoder, \
-    StreamTableEnvCreatorBuildIndex, PredictAutoEncoderWithTrain
+from python_job_executor import ReadCsvExample, TrainAutoEncoder
+from tianchi_executor import (
+    FindHistory,
+    OnlinePredictAutoEncoder,
+    PredictAutoEncoder,
+    PredictAutoEncoderWithTrain,
+    ReadOnlinePredictExample,
+    ReadPredictExample,
+    ReadTrainExample,
+    SearchSink,
+    StreamTableEnvCreator,
+    StreamTableEnvCreatorBuildIndex,
+    WriteSecondResult,
+)
 
 
-def get_project_path():
+def get_project_path() -> str:
     """
     获取当前项目路径。
     """
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def collect_data_file():
+def collect_data_file() -> tuple[str, str, str]:
     """
     收集示例数据文件路径。
+
+    Returns:
+        ``(train_data_file, first_test_file, first_result_data_file)`` 三元组。
     """
     # 示例数据集位于以下数据集路径。
     data_set = '{}/data_set/'.format(os.environ['ENV_HOME'])
     # 第一个输出结果文件位于以下输出路径。
     output = '{}/codes/{}/output/'.format(os.environ['ENV_HOME'], os.environ['TASK_ID'])
     train_data_file = data_set + 'train_data.csv'
-    label_data_file = data_set + 'label_file.csv'
     first_test_file = data_set + 'first_test_data.csv'
     first_result_data_file = output + 'first_result.csv'
     return train_data_file, first_test_file, first_result_data_file
 
 
-def prepare_workflow(train_data_file: str, first_test_data_file: str, first_result_data_file: str):
+def prepare_workflow(
+    train_data_file: str, first_test_data_file: str, first_result_data_file: str
+) -> tuple[ExampleMeta, ExampleMeta, ExampleMeta, ExampleMeta, ExampleMeta, ModelMeta]:
     """
     准备 workflow：注册 Example 与 Model 的元数据。
+
+    Returns:
+        ``(train_example_meta, first_test_example_meta, second_test_example_data,
+        first_result_example_meta, second_result_example_meta, train_model_meta)``
+        六元组。
     """
     train_example_meta: ExampleMeta = af.register_example(name='train_data',
                                                           support_type=ExampleSupportType.EXAMPLE_BATCH,
@@ -70,7 +97,7 @@ def prepare_workflow(train_data_file: str, first_test_data_file: str, first_resu
            first_result_example_meta, second_result_example_meta, train_model_meta
 
 
-def run_workflow():
+def run_workflow() -> None:
     """
     运行用户定义的工作流。
     """
