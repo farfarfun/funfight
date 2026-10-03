@@ -52,7 +52,7 @@ class TrainAutoEncoder(Executor):
         model.fit(x_train, x_train, validation_data=(x_test, x_test), epochs=1)
         encoder = Model(model_input, encoder)
         model_path = os.path.dirname(os.path.abspath(__file__)) + '/model'
-        logger.info("保存训练好的模型到 %s", model_path)
+        logger.info("保存训练好的模型到 {}", model_path)
         if os.path.exists(model_path):
             shutil.rmtree(model_path)
         tf.saved_model.simple_save(

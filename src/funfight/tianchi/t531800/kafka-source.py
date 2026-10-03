@@ -59,12 +59,12 @@ class Source:
                     process = Popen(
                         args=['kafka-topics.sh', '--bootstrap-server', bootstrap_servers, '--delete', '--topic',
                               read_example_topic, ], shell=False)
-                    logger.info("删除 kafka topic %s，退出码：%s", read_example_topic, process.wait())
+                    logger.info("删除 kafka topic {}，退出码：{}", read_example_topic, process.wait())
                 if write_example_topic in topics:
                     process = Popen(
                         args=['kafka-topics.sh', '--bootstrap-server', bootstrap_servers, '--delete', '--topic',
                               write_example_topic, ], shell=False)
-                    logger.info("删除 kafka topic %s，退出码：%s", write_example_topic, process.wait())
+                    logger.info("删除 kafka topic {}，退出码：{}", write_example_topic, process.wait())
                 # 创建在线推理读取示例 topic。
                 admin_client.create_topics(
                     new_topics=[NewTopic(name=read_example_topic, num_partitions=1, replication_factor=1)])
@@ -84,7 +84,7 @@ class Source:
                 producer = KafkaProducer(bootstrap_servers=[bootstrap_servers])
                 for index, row in df.iterrows():
                     value = f"{row.get(1)},{row.get(2)},{row.get(3)}"
-                    logger.info("发送在线推理读取示例消息: topic=%s, key=%s, value_digest=%s",
+                    logger.info("发送在线推理读取示例消息: topic={}, key={}, value_digest={}",
                                 read_example_topic, row.get(1), _value_digest(value))
                     # 发送在线推理读取示例消息。value 含人脸特征向量，不写入日志。
                     producer.send(read_example_topic,

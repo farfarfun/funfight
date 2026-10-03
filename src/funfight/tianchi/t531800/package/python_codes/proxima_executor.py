@@ -77,7 +77,7 @@ class SearchUDTF3(ScalarFunction):
         if self.ctx is None:
             raise RuntimeError(f"{type(self).__name__}: 检索上下文未初始化（open() 未被调用）")
         if len(vec) != 0 and not vec.isspace():
-            logger.debug("SearchUDTF3 收到向量: %s", feature_digest(vec))
+            logger.debug("SearchUDTF3 收到向量: {}", feature_digest(vec))
             vector = np.array([float(v) for v in vec.split(' ')]).astype(self.element_type.to_numpy_type())
             results = self.ctx.search(query=vector)
             near_key = results[0][0].key
@@ -184,7 +184,7 @@ class BuildIndexUDF(ScalarFunction):
         if len(vec) != 0 and not vec.isspace():
             vector = [float(v) for v in vec.split(' ')]
             self.holder.emplace(int(key), np.array(vector).astype(self.element_type.to_numpy_type()))
-            logger.debug("BuildIndexUDF 写入向量: key=%s, vec=%s", key, feature_digest(vec))
+            logger.debug("BuildIndexUDF 写入向量: key={}, vec={}", key, feature_digest(vec))
             return key
         return None
 

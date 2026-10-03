@@ -32,6 +32,10 @@
   `src/funfight/tianchi/...`。
 - `pyproject.toml` 的 `pytest.pythonpath` 补充 `python_codes` 目录，使按
   README 约定扁平导入的 `feature_predict.py` 可以被 `pytest` 直接测试。
+- `kafka-source.py`、`proxima_executor.py`、`python_job_executor.py`、`step1.py` 的
+  `logger.info`/`logger.error`/`logger.debug` 调用误用 stdlib logging 的 `%s` 占位符，
+  farlog（loguru）不支持该语法，参数会被静默丢弃、日志只剩字面量 `%s`；统一改为
+  loguru 的 `{}` 占位符，位置参数保持惰性求值。
 
 ## [0.0.5] - 2026-09-19
 
