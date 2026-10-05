@@ -1,3 +1,5 @@
+"""Flink 作业节点的 Source / Sink / Transform Executor 与推理 UDF。"""
+
 from __future__ import annotations
 
 import os

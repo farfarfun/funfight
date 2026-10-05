@@ -13,7 +13,7 @@ src/funfight/
 └── tianchi/
     └── t531800/
         ├── step1.py            # 准备环境：从蓝奏云下载数据集，安装 apache-flink / kafka-python，下载 Flink/Kafka 安装包
-        ├── kafka-source.py     # Source 类：监听 AIFlow 通知，创建/清理 Kafka topic，把测试集逐行发到 Kafka 作为在线推理输入
+        ├── kafka_source.py     # Source 类：监听 AIFlow 通知，创建/清理 Kafka topic，把测试集逐行发到 Kafka 作为在线推理输入
         ├── ai_flow_master.py   # 启动 AIFlowMaster（读取同目录 master.yaml）
         └── package/python_codes/
             ├── tianchi_main.py       # 定义完整 workflow：register_example/register_model 注册数据与模型 →
@@ -62,7 +62,7 @@ python3 -c "import funfight; print(funfight.__file__)"
 
 1. 执行 `src/funfight/tianchi/t531800/step1.py` 里的 `step1()`/`step2()`/`step3()`，依次下载数据集、安装 Flink/Kafka 历史版本、准备 `ai_flow` 环境；
 2. 参考 `src/funfight/tianchi/t531800/ai_flow_master.py` 启动 AIFlowMaster（读取同目录 `master.yaml`）；
-3. 按 `src/funfight/tianchi/t531800/README.md` 配置好 `PYTHONPATH`/`ENV_HOME`/`TASK_ID` 等环境变量后，启动 `src/funfight/tianchi/t531800/kafka-source.py`（Kafka Source）；
+3. 按 `src/funfight/tianchi/t531800/README.md` 配置好 `PYTHONPATH`/`ENV_HOME`/`TASK_ID` 等环境变量后，启动 `src/funfight/tianchi/t531800/kafka_source.py`（Kafka Source）；
 4. 最后运行 `src/funfight/tianchi/t531800/package/python_codes/tianchi_main.py` 提交 workflow。
 
 ---

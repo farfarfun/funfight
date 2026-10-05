@@ -1,8 +1,9 @@
-from farlog import getLogger
-from funshell import run_shell
+"""比赛环境准备脚本：下载数据集、安装当年版本的 Flink/Kafka。"""
 
+from farlog import getLogger
 from fundrive.drives.lanzou.drive import Task
 from fundrives.lanzou import LanZouCloud
+from funshell import run_shell
 
 logger = getLogger("funfight.tianchi.t531800.step1")
 

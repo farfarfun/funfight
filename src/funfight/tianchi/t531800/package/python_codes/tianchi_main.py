@@ -1,3 +1,5 @@
+"""531800 赛题的 AIFlow 工作流定义与提交入口。"""
+
 from __future__ import annotations
 
 import os

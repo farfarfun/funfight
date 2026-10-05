@@ -1,3 +1,5 @@
+"""Proxima 向量元素类型与 Flink / numpy 类型之间的转换适配层。"""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

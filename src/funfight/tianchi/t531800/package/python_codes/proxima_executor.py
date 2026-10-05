@@ -1,3 +1,5 @@
+"""Proxima 向量索引的构建与检索：Flink UDF 及对应的 AIFlow Executor。"""
+
 from __future__ import annotations
 
 import os
@@ -80,7 +82,10 @@ class SearchUDTF3(ScalarFunction):
             logger.debug("SearchUDTF3 收到向量: {}", feature_digest(vec))
             vector = np.array([float(v) for v in vec.split(' ')]).astype(self.element_type.to_numpy_type())
             results = self.ctx.search(query=vector)
-            near_key = results[0][0].key
+            # key() 是方法，必须调用取值；漏掉括号会把绑定方法对象塞进分组表，
+            # 每次检索都得到一个新对象，`near_key not in v` 永远成立，
+            # 于是每条记录都被判成一个新的人（兄弟 UDF 用的都是 `.key()`）。
+            near_key = results[0][0].key()
             for k, v in self.map.items():
                 if near_key not in v:
                     self.map[self.may_be_person_num] = []
@@ -127,13 +132,25 @@ class SearchUDTF(ScalarFunction):
 
 
 class SearchExecutor(Executor):
+    """批 / 离线检索作业的 AIFlow Executor：注册 :class:`SearchUDTF` 并产出近邻 id。"""
+
     def __init__(self, index_path: str, element_type: DataType, dimension: int):
+        """记录索引路径、向量元素类型与维度，供 :meth:`execute` 构造 UDF。"""
         super().__init__()
         self.path = index_path
         self.element_type = element_type
         self.dimension = dimension
 
     def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
+        """注册 ``search`` UDF，返回只含 ``face_id, near_id`` 两列的表。
+
+        Args:
+            function_context: AIFlow 注入的 Flink 上下文。
+            input_list: 上游表列表，只用第 0 张（需含 ``face_id``/``feature_data``）。
+
+        Returns:
+            单元素列表，元素是检索结果表。
+        """
         t_env = function_context.get_table_env()
         table = input_list[0]
         t_env.register_function("search", udf(SearchUDTF(self.path, self.element_type),
@@ -142,13 +159,25 @@ class SearchExecutor(Executor):
 
 
 class SearchExecutor3(Executor):
+    """在线链路检索作业的 AIFlow Executor：注册 :class:`SearchUDTF3` 并产出分组编号。"""
+
     def __init__(self, index_path: str, element_type: DataType, dimension: int):
+        """记录索引路径、向量元素类型与维度，供 :meth:`execute` 构造 UDF。"""
         super().__init__()
         self.path = index_path
         self.element_type = element_type
         self.dimension = dimension
 
     def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
+        """注册 ``search`` UDF，返回含 ``face_id, device_id, near_id`` 三列的表。
+
+        Args:
+            function_context: AIFlow 注入的 Flink 上下文。
+            input_list: 上游表列表，只用第 0 张（需含 ``face_id``/``device_id``/``feature_data``）。
+
+        Returns:
+            单元素列表，元素是检索结果表；``near_id`` 是 INT 型的分组编号。
+        """
         t_env = function_context.get_table_env()
         table = input_list[0]
         t_env.register_function("search", udf(SearchUDTF3(self.path, self.element_type),
@@ -194,13 +223,31 @@ class BuildIndexUDF(ScalarFunction):
 
 
 class BuildIndexExecutor(Executor):
+    """建索引作业的 AIFlow Executor：注册 :class:`BuildIndexUDF` 并把结果写进临时 sink。"""
+
     def __init__(self, index_path: str, element_type: DataType, dimension: int):
+        """记录索引输出路径、向量元素类型与维度，供 :meth:`execute` 构造 UDF。"""
+        # 与 SearchExecutor / SearchExecutor3 一致地初始化基类，原先漏了这一行。
+        super().__init__()
         self.element_type = element_type
         self.dimension = dimension
         self.path = index_path
         self._docs = 100000
 
     def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
+        """注册 ``build_index`` UDF，把写入的 key 落到一个一次性的 CSV sink。
+
+        索引本身由 :meth:`BuildIndexUDF.close` 在作业结束时落盘到 ``self.path``；
+        这里的 ``/tmp/indexed_key`` sink 只是 Flink 要求每条 pipeline 必须有下游，
+        执行前会先清掉上一次运行的残留。
+
+        Args:
+            function_context: AIFlow 注入的 Flink 上下文。
+            input_list: 上游表列表，只用第 0 张（需含 ``uuid``/``feature_data``）。
+
+        Returns:
+            空列表——本作业只有 insert 副作用，没有下游表。
+        """
         t_env = function_context.get_table_env()
         statement_set = function_context.get_statement_set()
         table = input_list[0]
