@@ -6,6 +6,13 @@
 
 ### 新增
 
+- 新增 `tests/test_repo_conventions.py`：仓库级规范回归测试（禁用裸 `subprocess`、
+  禁用 `yaml.load`、公开 API 必须有中文 docstring、注释必须是中文、
+  `SearchUDTF3` 必须调 `.key()`、三个 `Executor` 必须调 `super().__init__()`、
+  `pyproject` description 不是占位、`t531800/README.md` 与代码实际读取的数据文件
+  及 `os.environ` 变量一致、不允许带连字符的模块名）。存档代码 import 不了
+  （依赖 `ai_flow`/`pyflink`/`pyproxima2`），因此全部用 AST/文本静态断言。
+- 所有模块补充模块级中文 docstring。
 - 新增 `feature_predict.py`：把三条预测链路（批训练/离线历史/在线流）重复内联的
   cluster serving 预测逻辑合并成一份可被单元测试覆盖的实现（新增
   `tests/test_feature_predict.py`，覆盖正常解析、非法输入、非字符串响应、
@@ -14,6 +21,40 @@
   补充类型标注与中文 docstring。
 
 ### 修复
+
+- `proxima_executor.py` `SearchUDTF3.eval` 的 `results[0][0].key` 漏了括号，拿到的是
+  绑定方法对象而不是 key 值，导致 `near_key not in v` 恒为真、每条记录都被判成一个
+  新的人（同文件 `SearchUDF`/`SearchUDTF` 用的都是 `.key()`）。
+- `BuildIndexExecutor.__init__` 漏调 `super().__init__()`（同文件另外两个 Executor
+  都调了），补上。
+- `kafka_source.py` 两处用 `subprocess.Popen` 执行 `kafka-topics.sh` 删除 topic，
+  改为 `funshell.run_shell`（抽成 `delete_topic()`，参数经 `shlex.quote` 转义）；
+  原实现只把退出码写进 info 日志就继续建 topic，删除失败被静默吞掉，现在非 0
+  退出码直接抛 `RuntimeError`。
+- `kafka_source.py` 的 `yaml.load(yaml_file)` 未传 `Loader`，新版 PyYAML 会直接
+  `TypeError`，改为 `yaml.safe_load`。
+- 补齐 `SearchExecutor`/`SearchExecutor3`/`BuildIndexExecutor` 及其 `__init__`/
+  `execute`、`ReadCsvExample.execute`、`TrainAutoEncoder.execute`、
+  `Source.listen_notification` 与内部 `SourceWatcher` 的中文 docstring。
+- `pyproject.toml` 的 `description` 从占位的 `"funfight"` 改为与 GitHub description
+  一致的真实功能描述。
+- `tianchi_main.py` 里残留的 5 处英文注释改为中文。
+- 重写 `src/funfight/tianchi/t531800/README.md`：原说明让下载代码里根本不存在的
+  `label_file.csv`，改为列出实际读取的 `train_data.csv`/`first_test_data.csv`/
+  `second_test_data.csv` 及其读取位置；补上原先漏掉的必填环境变量 `FLINK_HOME`，
+  并把其实本仓库代码不读、由 ai_flow/Cluster Serving 框架读取的
+  `SERVING_HTTP_PATH` 等四个变量分到单独一张表。
+- 更正失实的外部资源说明：`step1()` 用的两个 `wws.lanzous.com` 蓝奏云链接已失效
+  （域名早已废弃，无有效证书、不返回有效响应），docstring 加 warning 指向赛题页面；
+  README 把 AI Flow 链到 `alibaba/flink-ai-extended`（已重定向到另一个项目
+  `flink-extended/dl-on-flink`），改为 `flink-extended/ai-flow`；README 与
+  `pyproject.toml` 注释称 `ai_flow`/`zoo.serving.client`「从未发布到公开 PyPI」，
+  实际 `ai-flow` 0.1.0 与 `analytics-zoo` 都在 PyPI 上，真正装不了的原因是
+  `ai-flow` 声明 `requires-python >=3.7,<3.8`，已逐个导入名改成真实现状表格。
+- `kafka-source.py` 重命名为 `kafka_source.py`（带连字符的模块名无法 import，
+  ruff N999，logger 名早已写成 `kafka_source`），同步更新两处 README 引用。
+- `src/funfight/__init__.py` 里的 shebang 与编码声明（ruff EXE001/UP009）换成模块
+  docstring；全仓库跑 `ruff format`。
 
 - `tianchi_executor.py` 中三处 `except Exception: ... return ''`（预测失败被静默
   转换为空结果）改为：解析/响应错误抛出带上下文的 `FeaturePredictError`，
