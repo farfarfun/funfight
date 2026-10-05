@@ -26,7 +26,7 @@ src/funfight/
             └── data_type.py            # FloatDataType / DoubleDataType：在 Proxima 类型和 Flink 类型之间转换
 ```
 
-`example/531800.py` 是空文件，`src/funfight/__init__.py`、`src/funfight/tianchi/__init__.py`、`t531800/__init__.py` 也都是空的包占位文件，没有对外暴露任何 API。
+`example/531800.py` 是空文件；`src/funfight/__init__.py`、`src/funfight/tianchi/__init__.py`、`t531800/__init__.py` 里只有说明性的模块 docstring，没有对外暴露任何 API。
 
 ## 依赖
 
@@ -62,8 +62,10 @@ python3 -c "import funfight; print(funfight.__file__)"
 
 1. 执行 `src/funfight/tianchi/t531800/step1.py` 里的 `step1()`/`step2()`/`step3()`，依次下载数据集、安装 Flink/Kafka 历史版本、准备 `ai_flow` 环境；
 2. 参考 `src/funfight/tianchi/t531800/ai_flow_master.py` 启动 AIFlowMaster（读取同目录 `master.yaml`）；
-3. 按 `src/funfight/tianchi/t531800/README.md` 配置好 `PYTHONPATH`/`ENV_HOME`/`TASK_ID` 等环境变量后，启动 `src/funfight/tianchi/t531800/kafka_source.py`（Kafka Source）；
+3. 按 `src/funfight/tianchi/t531800/README.md` 配置好 `PYTHONPATH`/`ENV_HOME`/`TASK_ID`/`FLINK_HOME` 等环境变量、并把 `source.yaml` 的 `dataset_uri` 指向 `second_test_data.csv` 后，启动 `src/funfight/tianchi/t531800/kafka_source.py`（Kafka Source）；
 4. 最后运行 `src/funfight/tianchi/t531800/package/python_codes/tianchi_main.py` 提交 workflow。
+
+子目录 README 里列齐了代码实际读取的三个数据文件（`train_data.csv`、`first_test_data.csv`、`second_test_data.csv`）、每个环境变量的读取位置，以及产物的落盘路径。
 
 ---
 
