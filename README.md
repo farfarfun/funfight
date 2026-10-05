@@ -2,7 +2,7 @@
 
 一次性的比赛代码存档，**不是通用工具/库，目前已废弃、未维护**。
 
-仓库里保存的是作者参加阿里云天池比赛（比赛编号 `531800`）时提交的方案代码：基于阿里开源的 [AI Flow](https://github.com/alibaba/flink-ai-extended) 框架编写的一套批流一体机器学习工作流，用 TensorFlow 训练自编码器（Autoencoder）、用 Proxima 构建向量索引、再用 Flink 做在线预测/检索。除了这一份比赛代码外，没有其他功能。
+仓库里保存的是作者参加阿里云天池比赛（比赛编号 `531800`）时提交的方案代码：基于阿里开源的 [AI Flow](https://github.com/flink-extended/ai-flow) 框架编写的一套批流一体机器学习工作流，用 TensorFlow 训练自编码器（Autoencoder）、用 Proxima 构建向量索引、再用 Flink 做在线预测/检索。除了这一份比赛代码外，没有其他功能。
 
 > 说明：目前 PyPI 上查不到 `funfight` 已发布的版本（返回 `Not Found`）。本仓库只是一次性比赛代码存档，**不建议 `pip install`**。
 
@@ -30,7 +30,20 @@ src/funfight/
 
 ## 依赖
 
-`pyproject.toml` 声明的直接依赖是本组织的 `fundrive[lanzou]`（下载数据集用）、`farlog`（日志）、`funshell`（执行 shell 命令）。除此之外，`src/funfight/tianchi/t531800/` 下的比赛方案代码还依赖比赛当时的特定环境：`ai_flow`、`flink_ai_flow`（阿里 AI Flow 框架）、`pyflink`、`pyproxima2`（向量检索）、`kafka-python`、`tensorflow`、`zoo.serving.client`，其中 `ai_flow`/`flink_ai_flow`/`pyproxima2`/`zoo.serving.client` 是阿里内部或比赛专用包，从未发布到公开 PyPI，**不能**通过 `pip install funfight` 装到。这些依赖版本较老，脚本里还有 `pip install apache-flink==1.11.0`、下载 Flink 1.11.0 / Kafka 2.3.0 安装包等步骤，无法直接在现代环境里运行，需要按天池比赛当年的环境手动搭建。
+`pyproject.toml` 声明的直接依赖是本组织的 `fundrive[lanzou]`（下载数据集用）、`farlog`（日志）、`funshell`（执行 shell 命令）。
+
+除此之外，`src/funfight/tianchi/t531800/` 下的比赛方案代码还依赖比赛当年的特定环境，这些依赖都**没有**写进 `pyproject.toml`，`pip install funfight` 装不出一个能跑的环境（2026-10 复核）：
+
+| 导入名 | 公开 PyPI 包 | 现状 |
+| --- | --- | --- |
+| `ai_flow` | [`ai-flow`](https://pypi.org/project/ai-flow/) 0.1.0 | 存在，但声明 `requires-python >=3.7,<3.8`，装不进本仓库要求的 Python ≥3.10 |
+| `flink_ai_flow`、`python_ai_flow` | 无 | 未发布到 PyPI，只能从 [flink-extended/ai-flow](https://github.com/flink-extended/ai-flow) 源码或比赛提供的包里取 |
+| `pyproxima2` | 无 | 阿里内部向量检索库，未公开发布 |
+| `zoo.serving.client` | [`analytics-zoo`](https://pypi.org/project/analytics-zoo/) | 存在，但同样是面向老版本 Python/Spark 的历史包 |
+| `pyflink` | `apache-flink` | 需锁在 1.11.0，与现代版本 API 不兼容 |
+| `kafka-python`、`tensorflow`、`pandas`、`numpy`、`PyYAML` | 有 | 版本需与当年环境匹配 |
+
+`step1.py` 里还有 `pip install apache-flink==1.11.0`、下载 Flink 1.11.0 / Kafka 2.3.0 安装包等步骤，整套环境无法在现代机器上直接复现，需要按天池比赛当年的环境手动搭建。另外 `step1()` 用的两个蓝奏云转存链接（`wws.lanzous.com`）**已经失效**，数据集请从赛题页面重新下载。
 
 ## 安装
 

@@ -26,7 +26,16 @@ def download(url: str, dir_pwd: str = "./data") -> None:
 
 
 def step1() -> None:
-    """下载天池比赛 531800 所需的数据集到 ./data 目录。"""
+    """下载当年转存到蓝奏云的数据集副本到 ./data 目录。
+
+    .. warning::
+       **这两个链接已失效。** 蓝奏云早年废弃了 ``lanzous.com`` 域名，
+       ``wws.lanzous.com`` 现在既不返回有效 HTTP 响应也没有可用证书，
+       本函数必然失败。请改为从赛题页面
+       https://tianchi.aliyun.com/competition/entrance/531800/information
+       下载数据集，并按同目录 README.md 放到 ``$ENV_HOME/data_set/``
+       （注意不是本函数写入的 ``./data``）。
+    """
     download("https://wws.lanzous.com/b01hlgi2b", dir_pwd="./data")
     download("https://wws.lanzous.com/izZmlfjulvg", dir_pwd="./data")
 
@@ -54,8 +63,13 @@ def step2() -> None:
 
 
 def step3() -> None:
-    """占位步骤：ai_flow 的 wheel 包需从比赛提供的 OSS 地址手动下载安装。
+    """占位步骤：ai_flow 的 wheel 包需手动下载安装。
 
-    下载地址（含签名参数，可能已过期）：
+    比赛提供的 OSS 地址（2026-10 复核仍可下载）：
     https://tianchi-competition.oss-cn-hangzhou.aliyuncs.com/531800/ai_flow/ai_flow-0.1-py3-none-any.whl
+
+    同一个包后来也发布到了 PyPI（``pip install ai-flow==0.1.0``），但它声明
+    ``requires-python >=3.7,<3.8``，装不进本仓库要求的 Python >=3.10 环境；
+    ``flink_ai_flow`` / ``python_ai_flow`` 这两个子包与 ``pyproxima2`` 则从未
+    上过公开 PyPI。
     """
