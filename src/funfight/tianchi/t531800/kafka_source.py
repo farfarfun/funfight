@@ -73,9 +73,13 @@ class Source:
         """
         super().__init__()
         self._yaml_config = None
-        with open(os.path.dirname(os.path.abspath(__file__)) + '/source.yaml', 'r') as yaml_file:
+        with open(
+            os.path.dirname(os.path.abspath(__file__)) + "/source.yaml", "r"
+        ) as yaml_file:
             self._yaml_config = yaml.safe_load(yaml_file)
-        self._aiflow_client = AIFlowClient(server_uri=self._yaml_config.get('master_uri'))
+        self._aiflow_client = AIFlowClient(
+            server_uri=self._yaml_config.get("master_uri")
+        )
 
     def listen_notification(self):
         """向 AIFlow Server 注册 source 监听器，收到通知后重建 topic 并灌入示例数据。
@@ -102,9 +106,9 @@ class Source:
                 Raises:
                     RuntimeError: 删除已存在的 topic 失败（见 :func:`delete_topic`）。
                 """
-                bootstrap_servers = self._yaml_config.get('bootstrap_servers')
-                read_example_topic = self._yaml_config.get('read_example_topic')
-                write_example_topic = self._yaml_config.get('write_example_topic')
+                bootstrap_servers = self._yaml_config.get("bootstrap_servers")
+                read_example_topic = self._yaml_config.get("read_example_topic")
+                write_example_topic = self._yaml_config.get("write_example_topic")
                 admin_client = KafkaAdminClient(bootstrap_servers=bootstrap_servers)
                 topics = admin_client.list_topics()
                 if read_example_topic in topics:
@@ -113,34 +117,60 @@ class Source:
                     delete_topic(bootstrap_servers, write_example_topic)
                 # 创建在线推理读取示例 topic。
                 admin_client.create_topics(
-                    new_topics=[NewTopic(name=read_example_topic, num_partitions=1, replication_factor=1)])
+                    new_topics=[
+                        NewTopic(
+                            name=read_example_topic,
+                            num_partitions=1,
+                            replication_factor=1,
+                        )
+                    ]
+                )
                 # 创建向量检索结果写出 topic。
                 admin_client.create_topics(
-                    new_topics=[NewTopic(name=write_example_topic, num_partitions=1, replication_factor=1)])
+                    new_topics=[
+                        NewTopic(
+                            name=write_example_topic,
+                            num_partitions=1,
+                            replication_factor=1,
+                        )
+                    ]
+                )
                 self.generate_read_example()
 
             def generate_read_example(self):
                 """
                 生成在线推理读取示例消息并发送到 Kafka。
                 """
-                bootstrap_servers = self._yaml_config.get('bootstrap_servers')
-                read_example_topic = self._yaml_config.get('read_example_topic')
+                bootstrap_servers = self._yaml_config.get("bootstrap_servers")
+                read_example_topic = self._yaml_config.get("read_example_topic")
                 # 读取在线推理示例数据集。
-                df = pd.read_csv(filepath_or_buffer=self._yaml_config.get('dataset_uri'), delimiter=';', header=None)
+                df = pd.read_csv(
+                    filepath_or_buffer=self._yaml_config.get("dataset_uri"),
+                    delimiter=";",
+                    header=None,
+                )
                 producer = KafkaProducer(bootstrap_servers=[bootstrap_servers])
                 for index, row in df.iterrows():
                     value = f"{row.get(1)},{row.get(2)},{row.get(3)}"
-                    logger.info("发送在线推理读取示例消息: topic={}, key={}, value_digest={}",
-                                read_example_topic, row.get(1), _value_digest(value))
+                    logger.info(
+                        "发送在线推理读取示例消息: topic={}, key={}, value_digest={}",
+                        read_example_topic,
+                        row.get(1),
+                        _value_digest(value),
+                    )
                     # 发送在线推理读取示例消息。value 含人脸特征向量，不写入日志。
-                    producer.send(read_example_topic,
-                                  key=bytes(row.get(1), encoding='utf8'),
-                                  value=bytes(value, encoding='utf8'))
-                    time.sleep(self._yaml_config.get('time_interval') / 1000)
+                    producer.send(
+                        read_example_topic,
+                        key=bytes(row.get(1), encoding="utf8"),
+                        value=bytes(value, encoding="utf8"),
+                    )
+                    time.sleep(self._yaml_config.get("time_interval") / 1000)
 
-        self._aiflow_client.start_listen_notification(listener_name='source_listener',
-                                                      key=self._yaml_config.get('notification_key'),
-                                                      watcher=SourceWatcher(self._yaml_config))
+        self._aiflow_client.start_listen_notification(
+            listener_name="source_listener",
+            key=self._yaml_config.get("notification_key"),
+            watcher=SourceWatcher(self._yaml_config),
+        )
 
 
 def main() -> None:
@@ -153,5 +183,5 @@ def main() -> None:
     source.listen_notification()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

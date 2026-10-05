@@ -78,10 +78,15 @@ class StreamTableEnvCreatorBuildIndex(TableEnvCreator):
         t_env = StreamTableEnvironment.create(
             stream_env,
             environment_settings=EnvironmentSettings.new_instance()
-                .in_streaming_mode().use_blink_planner().build())
+            .in_streaming_mode()
+            .use_blink_planner()
+            .build(),
+        )
         statement_set = t_env.create_statement_set()
-        t_env.get_config().set_python_executable('/usr/bin/python3')
-        t_env.get_config().get_configuration().set_boolean("python.fn-execution.memory.managed", True)
+        t_env.get_config().set_python_executable("/usr/bin/python3")
+        t_env.get_config().get_configuration().set_boolean(
+            "python.fn-execution.memory.managed", True
+        )
         return stream_env, t_env, statement_set
 
 
@@ -95,10 +100,15 @@ class StreamTableEnvCreator(TableEnvCreator):
         t_env = StreamTableEnvironment.create(
             stream_env,
             environment_settings=EnvironmentSettings.new_instance()
-                .in_streaming_mode().use_blink_planner().build())
+            .in_streaming_mode()
+            .use_blink_planner()
+            .build(),
+        )
         statement_set = t_env.create_statement_set()
-        t_env.get_config().set_python_executable('/usr/bin/python3')
-        t_env.get_config().get_configuration().set_boolean("python.fn-execution.memory.managed", True)
+        t_env.get_config().set_python_executable("/usr/bin/python3")
+        t_env.get_config().get_configuration().set_boolean(
+            "python.fn-execution.memory.managed", True
+        )
         return stream_env, t_env, statement_set
 
 
@@ -109,11 +119,17 @@ class BatchTableEnvCreator(TableEnvCreator):
         """返回 (ExecutionEnvironment, BatchTableEnvironment, StatementSet)。"""
         exec_env = ExecutionEnvironment.get_execution_environment()
         t_env = BatchTableEnvironment.create(
-            environment_settings=EnvironmentSettings.new_instance().in_batch_mode().use_blink_planner().build())
+            environment_settings=EnvironmentSettings.new_instance()
+            .in_batch_mode()
+            .use_blink_planner()
+            .build()
+        )
         t_env._j_tenv.getPlanner().getExecEnv().setParallelism(1)
         statement_set = t_env.create_statement_set()
-        t_env.get_config().set_python_executable('/usr/bin/python3')
-        t_env.get_config().get_configuration().set_boolean("python.fn-execution.memory.managed", True)
+        t_env.get_config().set_python_executable("/usr/bin/python3")
+        t_env.get_config().get_configuration().set_boolean(
+            "python.fn-execution.memory.managed", True
+        )
         return exec_env, t_env, statement_set
 
 
@@ -137,17 +153,19 @@ class ReadTrainExample(SourceExecutor):
                         'format.field-delimiter' = ';'
                     )"""
         table_env.execute_sql(ddl)
-        return table_env.from_path('training_table')
+        return table_env.from_path("training_table")
 
 
 class FindHistory(Executor):
     """把检索结果与训练集 join，拿到每个近邻 uuid 对应的历史 face_id。"""
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
+    def execute(
+        self, function_context: FlinkFunctionContext, input_list: list[Table]
+    ) -> list[Table]:
         """返回只含一个元素的列表：join 后的 Table。"""
         t_env = function_context.get_table_env()
         table_0 = input_list[0]
-        t_env.create_temporary_view('near_table', table_0)
+        t_env.create_temporary_view("near_table", table_0)
         join_query = """select
         near_table.face_id, training_table.face_id
         from training_table
@@ -173,7 +191,7 @@ class ReadPredictExample(SourceExecutor):
                         'format.field-delimiter' = ';'
                     )"""
         table_env.execute_sql(ddl)
-        return table_env.from_path('test_table')
+        return table_env.from_path("test_table")
 
 
 class ReadOnlinePredictExample(SourceExecutor):
@@ -196,16 +214,18 @@ class ReadOnlinePredictExample(SourceExecutor):
                 'scan.startup.mode' = 'earliest-offset'
             )
         """)
-        table = table_env.from_path('online_example')
+        table = table_env.from_path("online_example")
         # 通知 AIFlow 发送在线示例消息。
-        update_notification('source', function_context.node_spec.instance_id)
+        update_notification("source", function_context.node_spec.instance_id)
         return table
 
 
 class TransformTrainExample(Executor):
     """训练集透传算子：原样返回输入表，仅用于串联 workflow 节点。"""
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
+    def execute(
+        self, function_context: FlinkFunctionContext, input_list: list[Table]
+    ) -> list[Table]:
         """原样返回输入表。"""
         input_table = input_list[0]
         return [input_table]
@@ -214,7 +234,9 @@ class TransformTrainExample(Executor):
 class PredictAutoEncoderWithTrain(Executor):
     """批训练链路：对训练集特征做预测，输出 uuid/face_id/预测特征。"""
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
+    def execute(
+        self, function_context: FlinkFunctionContext, input_list: list[Table]
+    ) -> list[Table]:
         """注册 ``predict1`` UDF 并对输入表做投影。"""
         function_context.t_env.register_function(
             "predict1",
@@ -224,13 +246,19 @@ class PredictAutoEncoderWithTrain(Executor):
                 result_type=DataTypes.STRING(),
             ),
         )
-        return [input_list[0].select('uuid, face_id, predict1(feature_data) as feature_data')]
+        return [
+            input_list[0].select(
+                "uuid, face_id, predict1(feature_data) as feature_data"
+            )
+        ]
 
 
 class PredictAutoEncoder(Executor):
     """离线历史链路：对历史测试集特征做预测，输出 face_id/预测特征。"""
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
+    def execute(
+        self, function_context: FlinkFunctionContext, input_list: list[Table]
+    ) -> list[Table]:
         """注册 ``predict1`` UDF 并对输入表做投影。"""
         function_context.t_env.register_function(
             "predict1",
@@ -240,13 +268,15 @@ class PredictAutoEncoder(Executor):
                 result_type=DataTypes.STRING(),
             ),
         )
-        return [input_list[0].select('face_id, predict1(feature_data) as feature_data')]
+        return [input_list[0].select("face_id, predict1(feature_data) as feature_data")]
 
 
 class OnlinePredictAutoEncoder(Executor):
     """在线流链路：对 Kafka 流入的特征做预测，输出 face_id/device_id/预测特征。"""
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
+    def execute(
+        self, function_context: FlinkFunctionContext, input_list: list[Table]
+    ) -> list[Table]:
         """注册 ``predict2`` UDF 并对输入表做投影。"""
         function_context.t_env.register_function(
             "predict2",
@@ -256,13 +286,19 @@ class OnlinePredictAutoEncoder(Executor):
                 result_type=DataTypes.STRING(),
             ),
         )
-        return [input_list[0].select('face_id, device_id, predict2(feature_data) as feature_data')]
+        return [
+            input_list[0].select(
+                "face_id, device_id, predict2(feature_data) as feature_data"
+            )
+        ]
 
 
 class SearchSink(SinkExecutor):
     """把第一阶段检索结果写成 CSV 文件，写前清理同名输出。"""
 
-    def execute(self, function_context: FlinkFunctionContext, input_table: Table) -> None:
+    def execute(
+        self, function_context: FlinkFunctionContext, input_table: Table
+    ) -> None:
         """注册 CsvTableSink 并把输入表插入其中。"""
         example_meta: ExampleMeta = function_context.get_example_meta()
         output_file = example_meta.batch_uri
@@ -273,19 +309,20 @@ class SearchSink(SinkExecutor):
                 os.remove(output_file)
         t_env = function_context.get_table_env()
         statement_set = function_context.get_statement_set()
-        sink = CsvTableSink(['a', 'b'],
-                            [DataTypes.STRING(), DataTypes.STRING()],
-                            output_file,
-                            ';')
+        sink = CsvTableSink(
+            ["a", "b"], [DataTypes.STRING(), DataTypes.STRING()], output_file, ";"
+        )
 
-        t_env.register_table_sink('mySink', sink)
-        statement_set.add_insert('mySink', input_table)
+        t_env.register_table_sink("mySink", sink)
+        statement_set.add_insert("mySink", input_table)
 
 
 class WriteSecondResult(SinkExecutor):
     """把第二阶段（在线流）检索结果写回 Kafka topic。"""
 
-    def execute(self, function_context: FlinkFunctionContext, input_table: Table) -> None:
+    def execute(
+        self, function_context: FlinkFunctionContext, input_table: Table
+    ) -> None:
         """建表 ``write_example`` 并把输入表插入其中。"""
         table_env: TableEnvironment = function_context.get_table_env()
         statement_set = function_context.get_statement_set()
@@ -304,4 +341,4 @@ class WriteSecondResult(SinkExecutor):
                     'csv.disable-quote-character' = 'true'
                 )
                 """)
-        statement_set.add_insert('write_example', input_table)
+        statement_set.add_insert("write_example", input_table)

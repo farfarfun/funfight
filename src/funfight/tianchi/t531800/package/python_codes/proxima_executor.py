@@ -31,7 +31,7 @@ class SearchUDF(ScalarFunction):
 
     def open(self, function_context: FunctionContext) -> None:
         """加载 Proxima 索引文件并建立检索上下文。"""
-        container = IndexContainer(name='MMapFileContainer', params={})
+        container = IndexContainer(name="MMapFileContainer", params={})
         container.load(self.path)
         searcher = IndexSearcher("ClusteringSearcher")
         self.ctx = searcher.load(container).create_context(topk=self.topk)
@@ -43,9 +43,13 @@ class SearchUDF(ScalarFunction):
             RuntimeError: ``open()`` 未被调用导致检索上下文缺失。
         """
         if self.ctx is None:
-            raise RuntimeError(f"{type(self).__name__}: 检索上下文未初始化（open() 未被调用）")
+            raise RuntimeError(
+                f"{type(self).__name__}: 检索上下文未初始化（open() 未被调用）"
+            )
         if len(vec) != 0 and not vec.isspace():
-            vector = np.array([float(v) for v in vec.split(' ')]).astype(self.element_type.to_numpy_type())
+            vector = np.array([float(v) for v in vec.split(" ")]).astype(
+                self.element_type.to_numpy_type()
+            )
             results = self.ctx.search(query=vector)
             return results[0][0].key()
         return None
@@ -65,7 +69,7 @@ class SearchUDTF3(ScalarFunction):
 
     def open(self, function_context: FunctionContext) -> None:
         """加载 Proxima 索引文件并建立检索上下文。"""
-        container = IndexContainer(name='MMapFileContainer', params={})
+        container = IndexContainer(name="MMapFileContainer", params={})
         container.load(self.path)
         searcher = IndexSearcher("ClusteringSearcher")
         self.ctx = searcher.load(container).create_context(topk=self.topk)
@@ -77,10 +81,14 @@ class SearchUDTF3(ScalarFunction):
             RuntimeError: ``open()`` 未被调用导致检索上下文缺失。
         """
         if self.ctx is None:
-            raise RuntimeError(f"{type(self).__name__}: 检索上下文未初始化（open() 未被调用）")
+            raise RuntimeError(
+                f"{type(self).__name__}: 检索上下文未初始化（open() 未被调用）"
+            )
         if len(vec) != 0 and not vec.isspace():
             logger.debug("SearchUDTF3 收到向量: {}", feature_digest(vec))
-            vector = np.array([float(v) for v in vec.split(' ')]).astype(self.element_type.to_numpy_type())
+            vector = np.array([float(v) for v in vec.split(" ")]).astype(
+                self.element_type.to_numpy_type()
+            )
             results = self.ctx.search(query=vector)
             # key() 是方法，必须调用取值；漏掉括号会把绑定方法对象塞进分组表，
             # 每次检索都得到一个新对象，`near_key not in v` 永远成立，
@@ -110,7 +118,7 @@ class SearchUDTF(ScalarFunction):
 
     def open(self, function_context: FunctionContext) -> None:
         """加载 Proxima 索引文件并建立检索上下文。"""
-        container = IndexContainer(name='MMapFileContainer', params={})
+        container = IndexContainer(name="MMapFileContainer", params={})
         container.load(self.path)
         searcher = IndexSearcher("ClusteringSearcher")
         self.ctx = searcher.load(container).create_context(topk=self.topk)
@@ -122,9 +130,13 @@ class SearchUDTF(ScalarFunction):
             RuntimeError: ``open()`` 未被调用导致检索上下文缺失。
         """
         if self.ctx is None:
-            raise RuntimeError(f"{type(self).__name__}: 检索上下文未初始化（open() 未被调用）")
+            raise RuntimeError(
+                f"{type(self).__name__}: 检索上下文未初始化（open() 未被调用）"
+            )
         if len(vec) != 0 and not vec.isspace():
-            vector = np.array([float(v) for v in vec.split(' ')]).astype(self.element_type.to_numpy_type())
+            vector = np.array([float(v) for v in vec.split(" ")]).astype(
+                self.element_type.to_numpy_type()
+            )
             results = self.ctx.search(query=vector)
             for i in results[0]:
                 return str(i.key())
@@ -141,7 +153,9 @@ class SearchExecutor(Executor):
         self.element_type = element_type
         self.dimension = dimension
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
+    def execute(
+        self, function_context: FlinkFunctionContext, input_list: list[Table]
+    ) -> list[Table]:
         """注册 ``search`` UDF，返回只含 ``face_id, near_id`` 两列的表。
 
         Args:
@@ -153,8 +167,14 @@ class SearchExecutor(Executor):
         """
         t_env = function_context.get_table_env()
         table = input_list[0]
-        t_env.register_function("search", udf(SearchUDTF(self.path, self.element_type),
-                                              DataTypes.STRING(), DataTypes.STRING()))
+        t_env.register_function(
+            "search",
+            udf(
+                SearchUDTF(self.path, self.element_type),
+                DataTypes.STRING(),
+                DataTypes.STRING(),
+            ),
+        )
         return [table.select("face_id, search(feature_data) as near_id")]
 
 
@@ -168,7 +188,9 @@ class SearchExecutor3(Executor):
         self.element_type = element_type
         self.dimension = dimension
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
+    def execute(
+        self, function_context: FlinkFunctionContext, input_list: list[Table]
+    ) -> list[Table]:
         """注册 ``search`` UDF，返回含 ``face_id, device_id, near_id`` 三列的表。
 
         Args:
@@ -180,8 +202,14 @@ class SearchExecutor3(Executor):
         """
         t_env = function_context.get_table_env()
         table = input_list[0]
-        t_env.register_function("search", udf(SearchUDTF3(self.path, self.element_type),
-                                              DataTypes.STRING(), DataTypes.INT()))
+        t_env.register_function(
+            "search",
+            udf(
+                SearchUDTF3(self.path, self.element_type),
+                DataTypes.STRING(),
+                DataTypes.INT(),
+            ),
+        )
         return [table.select("face_id, device_id, search(feature_data) as near_id")]
 
 
@@ -199,11 +227,16 @@ class BuildIndexUDF(ScalarFunction):
 
     def open(self, function_context: FunctionContext) -> None:
         """创建 Proxima ``IndexHolder``/``IndexBuilder``。"""
-        self.holder = IndexHolder(type=self.element_type.to_proxima_type(), dimension=self.dimension)
+        self.holder = IndexHolder(
+            type=self.element_type.to_proxima_type(), dimension=self.dimension
+        )
         self.builder = IndexBuilder(
             name="ClusteringBuilder",
-            meta=IndexMeta(type=self.element_type.to_proxima_type(), dimension=self.dimension),
-            params={'proxima.hc.builder.max_document_count': self._docs})
+            meta=IndexMeta(
+                type=self.element_type.to_proxima_type(), dimension=self.dimension
+            ),
+            params={"proxima.hc.builder.max_document_count": self._docs},
+        )
 
     def eval(self, key: str, vec: str) -> str | None:
         """把空格分隔的特征向量 ``vec`` 以 ``key`` 写入 holder，返回写入的 ``key``。
@@ -211,9 +244,13 @@ class BuildIndexUDF(ScalarFunction):
         未写入（``vec`` 为空）时返回 ``None``。
         """
         if len(vec) != 0 and not vec.isspace():
-            vector = [float(v) for v in vec.split(' ')]
-            self.holder.emplace(int(key), np.array(vector).astype(self.element_type.to_numpy_type()))
-            logger.debug("BuildIndexUDF 写入向量: key={}, vec={}", key, feature_digest(vec))
+            vector = [float(v) for v in vec.split(" ")]
+            self.holder.emplace(
+                int(key), np.array(vector).astype(self.element_type.to_numpy_type())
+            )
+            logger.debug(
+                "BuildIndexUDF 写入向量: key={}, vec={}", key, feature_digest(vec)
+            )
             return key
         return None
 
@@ -234,7 +271,9 @@ class BuildIndexExecutor(Executor):
         self.path = index_path
         self._docs = 100000
 
-    def execute(self, function_context: FlinkFunctionContext, input_list: list[Table]) -> list[Table]:
+    def execute(
+        self, function_context: FlinkFunctionContext, input_list: list[Table]
+    ) -> list[Table]:
         """注册 ``build_index`` UDF，把写入的 key 落到一个一次性的 CSV sink。
 
         索引本身由 :meth:`BuildIndexUDF.close` 在作业结束时落盘到 ``self.path``；
@@ -251,19 +290,26 @@ class BuildIndexExecutor(Executor):
         t_env = function_context.get_table_env()
         statement_set = function_context.get_statement_set()
         table = input_list[0]
-        t_env.register_function("build_index", udf(BuildIndexUDF(self.path, self.element_type, self.dimension),
-                                                   [DataTypes.STRING(), DataTypes.STRING()], DataTypes.STRING()))
-        dummy_output_path = '/tmp/indexed_key'
+        t_env.register_function(
+            "build_index",
+            udf(
+                BuildIndexUDF(self.path, self.element_type, self.dimension),
+                [DataTypes.STRING(), DataTypes.STRING()],
+                DataTypes.STRING(),
+            ),
+        )
+        dummy_output_path = "/tmp/indexed_key"
         if os.path.exists(dummy_output_path):
             if os.path.isdir(dummy_output_path):
                 shutil.rmtree(dummy_output_path)
             else:
                 os.remove(dummy_output_path)
-        t_env.connect(FileSystem().path(dummy_output_path)) \
-            .with_format(OldCsv()
-                         .field('key', DataTypes.STRING())) \
-            .with_schema(Schema()
-                         .field('key', DataTypes.STRING())) \
-            .create_temporary_table('train_sink')
-        statement_set.add_insert("train_sink", table.select("build_index(uuid, feature_data)"))
+        t_env.connect(FileSystem().path(dummy_output_path)).with_format(
+            OldCsv().field("key", DataTypes.STRING())
+        ).with_schema(Schema().field("key", DataTypes.STRING())).create_temporary_table(
+            "train_sink"
+        )
+        statement_set.add_insert(
+            "train_sink", table.select("build_index(uuid, feature_data)")
+        )
         return []

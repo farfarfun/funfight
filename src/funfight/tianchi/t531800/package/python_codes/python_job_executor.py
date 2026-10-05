@@ -34,12 +34,12 @@ class ReadCsvExample(Executor):
             单元素列表，元素是 ``numpy.ndarray`` 形式的特征矩阵。
         """
         example_meta: ExampleMeta = function_context.node_spec.example_meta
-        data = pd.read_csv(example_meta.batch_uri, sep=';', header=None, usecols=[3])
+        data = pd.read_csv(example_meta.batch_uri, sep=";", header=None, usecols=[3])
         n = data.values.tolist()
         rows = len(n)
         xx = []
         for i in range(rows):
-            yy = n[i][0].split(' ')
+            yy = n[i][0].split(" ")
             x = []
             for y in yy:
                 x.append(float(y))
@@ -72,10 +72,10 @@ class TrainAutoEncoder(Executor):
         encoder = Dense(encoding_dim)(model_input)
         decoder = Dense(input_dim)(encoder)
         model = Model(model_input, decoder)
-        model.compile(loss='binary_crossentropy', optimizer=Adam())
+        model.compile(loss="binary_crossentropy", optimizer=Adam())
         model.fit(x_train, x_train, validation_data=(x_test, x_test), epochs=1)
         encoder = Model(model_input, encoder)
-        model_path = os.path.dirname(os.path.abspath(__file__)) + '/model'
+        model_path = os.path.dirname(os.path.abspath(__file__)) + "/model"
         logger.info("保存训练好的模型到 {}", model_path)
         if os.path.exists(model_path):
             shutil.rmtree(model_path)
@@ -83,7 +83,7 @@ class TrainAutoEncoder(Executor):
             tf.keras.backend.get_session(),
             model_path,
             inputs={"aaa_input": encoder.input},
-            outputs={"bbb": encoder.output}
+            outputs={"bbb": encoder.output},
         )
         model_meta: ModelMeta = function_context.node_spec.output_model
         # 注册模型版本，通知 cluster serving 可以开始加载该模型版本。

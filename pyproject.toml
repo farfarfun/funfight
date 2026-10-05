@@ -40,6 +40,12 @@ pythonpath = ["src", "src/funfight/tianchi/t531800/package/python_codes"]
 [dependency-groups]
 dev = ["pytest>=7.0"]
 
+[tool.ruff.lint.isort]
+# requires-python 是 >=3.10，ruff 据此把 tomllib（3.11 才进标准库）当成第三方包，
+# 导致 tests/ 里的 `import tomllib` 被 I001 要求排到 pytest 后面。测试只在本机
+# 跑，用的是 3.11+ 解释器，这里直接声明它是标准库。
+extra-standard-library = ["tomllib"]
+
 [tool.ruff.lint]
 ignore = [
     # farlog（基于 loguru）的日志调用用 `{}` 占位符传参，不是 stdlib logging 的

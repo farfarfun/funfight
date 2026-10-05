@@ -58,7 +58,9 @@ def step2() -> None:
     for command in commands:
         exit_code = run_shell(command)
         if exit_code != "0":
-            logger.error("step2 命令执行失败: command={}, exit_code={}", command, exit_code)
+            logger.error(
+                "step2 命令执行失败: command={}, exit_code={}", command, exit_code
+            )
             raise RuntimeError(f"step2 命令执行失败: {command} (exit_code={exit_code})")
 
 
