@@ -114,26 +114,27 @@ def run_workflow() -> None:
     # 将 Proxima 索引保存到以下路径。
     index_path = '{}/codes/{}/'.format(os.environ['ENV_HOME'], os.environ['TASK_ID']) + 'test.index'
 
-    # Set Python job config to train model.
+    # 训练自编码器模型的 Python 作业配置。
     python_job_config_0 = BaseJobConfig(platform='local', engine='python', job_name='train')
 
+    # 拉起 cluster serving 的 Python 作业配置。
     python_job_config_1 = BaseJobConfig(platform='local', engine='python', job_name='start_cluster_serving')
 
-    # Set Flink job config to build index.
+    # 构建 Proxima 索引的 Flink 作业配置。
     global_job_config_1 = LocalFlinkJobConfig()
     global_job_config_1.local_mode = 'cluster'
     global_job_config_1.flink_home = os.environ['FLINK_HOME']
     global_job_config_1.job_name = 'build_index'
     global_job_config_1.set_table_env_create_func(StreamTableEnvCreatorBuildIndex())
 
-    # Set Flink job config to fink sick.
+    # 离线检索历史密接者（find_sick）的 Flink 作业配置。
     global_job_config_2 = LocalFlinkJobConfig()
     global_job_config_2.local_mode = 'cluster'
     global_job_config_2.flink_home = os.environ['FLINK_HOME']
     global_job_config_2.job_name = 'find_sick'
     global_job_config_2.set_table_env_create_func(StreamTableEnvCreator())
 
-    # Set Flink job config to online cluster.
+    # 在线聚类（online_cluster）的 Flink 作业配置。
     global_job_config_3 = LocalFlinkJobConfig()
     global_job_config_3.local_mode = 'cluster'
     global_job_config_3.flink_home = os.environ['FLINK_HOME']
@@ -141,7 +142,7 @@ def run_workflow() -> None:
     global_job_config_3.set_table_env_create_func(StreamTableEnvCreator())
 
     with af.config(python_job_config_0):
-        # Under first job config, we construct the first job, the job is going to train an auto_encoder model.
+        # 第一个作业：读训练集并训练自编码器模型。
         job_0_read_train_example = af.read_example(example_info=train_example_meta,
                                                    executor=PythonObjectExecutor(python_object=ReadCsvExample()))
         job_0_train_model = af.train(input_data_list=[job_0_read_train_example],

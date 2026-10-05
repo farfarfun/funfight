@@ -1,7 +1,7 @@
 [project]
 name = "funfight"
 version = "0.0.5"
-description = "funfight"
+description = "阿里天池 531800 赛题参赛代码存档：基于 Flink AI Flow 编排的流批一体工作流，含 Kafka 数据源、AutoEncoder 训练与在线预测、Proxima 向量索引构建与相似检索"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
