@@ -10,6 +10,7 @@ import hashlib
 import os
 import shlex
 import time
+from typing import Any
 
 import pandas as pd
 import yaml
@@ -81,7 +82,7 @@ class Source:
             server_uri=self._yaml_config.get("master_uri")
         )
 
-    def listen_notification(self):
+    def listen_notification(self) -> None:
         """向 AIFlow Server 注册 source 监听器，收到通知后重建 topic 并灌入示例数据。
 
         内部定义的 ``SourceWatcher`` 在每次通知到达时删除并重建读写两个 Kafka
@@ -91,16 +92,16 @@ class Source:
         class SourceWatcher(Watcher):
             """source 通知的处理器：重建 Kafka topic 并生成在线推理读取示例。"""
 
-            def __init__(self, yaml_config: dict):
+            def __init__(self, yaml_config: dict[str, Any]) -> None:
                 """记录 source.yaml 解析结果，供后续重建 topic / 发消息使用。"""
                 super().__init__()
                 self._yaml_config = yaml_config
 
-            def process(self, listener_name, notifications):
+            def process(self, listener_name: str, notifications: list[Any]) -> None:
                 """AIFlow 通知回调入口，转交给 :meth:`process_notification`。"""
                 self.process_notification()
 
-            def process_notification(self):
+            def process_notification(self) -> None:
                 """删除并重建读写两个 Kafka topic，然后生成在线推理读取示例消息。
 
                 Raises:
@@ -137,7 +138,7 @@ class Source:
                 )
                 self.generate_read_example()
 
-            def generate_read_example(self):
+            def generate_read_example(self) -> None:
                 """
                 生成在线推理读取示例消息并发送到 Kafka。
                 """
