@@ -1,9 +1,12 @@
 # 天池 531800 赛题运行说明
 
 本目录是比赛代码存档，依赖比赛当年的 `ai_flow` / `flink_ai_flow` / `pyflink 1.11`
-/ `pyproxima2` / `zoo.serving.client` 等专用包（均未发布到公开 PyPI），
-**现代环境无法按这份说明直接跑通**。下面还原的是当年的运行步骤与代码实际读取的
-路径、文件名与环境变量，供阅读代码时对照。
+/ `pyproxima2` / `zoo.serving.client` 等专用包。`ai_flow`（PyPI 包名为 `ai-flow`）和
+`zoo.serving.client`（来自 `analytics-zoo`）已经发布到 PyPI，但都面向旧版 Python/Spark；
+`flink_ai_flow`、`python_ai_flow` 与 `pyproxima2` 则未发布到公开 PyPI。`ai-flow 0.1.0`
+声明 `requires-python >=3.7,<3.8`，与本仓库要求的 Python >=3.10 冲突，因此**现代环境
+无法按这份说明直接跑通**。下面还原的是当年的运行步骤与代码实际读取的路径、文件名与
+环境变量，供阅读代码时对照。
 
 ## 1. 准备数据集
 
